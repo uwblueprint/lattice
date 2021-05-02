@@ -78,29 +78,33 @@ async fn main() -> Result<()> {
             .body(source)
     });
 
-    // Build root filter.
-    let root = graphql_playground
-        .or(path("graphql").and(graphql_subscription.or(graphql)))
-        .recover(|err: Rejection| async move {
-            let (error, status_code) = if err.is_not_found() {
-                let error = ServerError::new("not found");
-                (error, StatusCode::NOT_FOUND)
-            } else if let Some(BadGraphQLRequest(err)) = err.find() {
-                let error = ServerError::new(err.to_string());
-                (error, StatusCode::BAD_REQUEST)
-            } else {
-                let error = ServerError::new("internal server error");
-                (error, StatusCode::INTERNAL_SERVER_ERROR)
-            };
+    // Build API routes.
+    let api = path("api").and(
+        graphql_playground
+            .or(path("graphql").and(graphql_subscription.or(graphql))),
+    );
 
-            let reply = ServerRejectionReply {
-                errors: vec![error],
-                status_code: status_code.as_u16(),
-            };
-            let reply = reply_json(&reply);
-            let reply = reply_with_status(reply, status_code);
-            Ok::<_, Infallible>(reply)
-        });
+    // Build root filter.
+    let root = api.recover(|err: Rejection| async move {
+        let (error, status_code) = if err.is_not_found() {
+            let error = ServerError::new("not found");
+            (error, StatusCode::NOT_FOUND)
+        } else if let Some(BadGraphQLRequest(err)) = err.find() {
+            let error = ServerError::new(err.to_string());
+            (error, StatusCode::BAD_REQUEST)
+        } else {
+            let error = ServerError::new("internal server error");
+            (error, StatusCode::INTERNAL_SERVER_ERROR)
+        };
+
+        let reply = ServerRejectionReply {
+            errors: vec![error],
+            status_code: status_code.as_u16(),
+        };
+        let reply = reply_json(&reply);
+        let reply = reply_with_status(reply, status_code);
+        Ok::<_, Infallible>(reply)
+    });
 
     let host =
         env_var_or("HOST", "0.0.0.0").context("failed to get server host")?;
@@ -116,12 +120,14 @@ async fn main() -> Result<()> {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ServerRejectionReply {
     errors: Vec<ServerError>,
     status_code: u16,
 }
 
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ServerError {
     message: Cow<'static, str>,
 }

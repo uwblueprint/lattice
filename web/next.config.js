@@ -4,7 +4,7 @@ module.exports = {
   productionBrowserSourceMaps: true,
   rewrites: async () => {
     if (!NEXT_SERVER_API_URL) {
-      console.warn("Missing API server URL.");
+      console.info("Missing API server URL; proxying is disabled.");
       return [];
     }
     return [

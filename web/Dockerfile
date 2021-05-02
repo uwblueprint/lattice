@@ -25,6 +25,8 @@ RUN addgroup -g 1001 -S docker && \
     chown -R docker:docker /app/.next
 USER docker
 
+# TODO: Add healthchecks.
+
 ENV NODE_ENV=production
 EXPOSE 8000
 ENTRYPOINT ["yarn", "start"]

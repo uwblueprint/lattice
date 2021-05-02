@@ -6,12 +6,14 @@ _An experimental integrated service platform for UW Blueprint._
 
 ### Current State
 
-When you start it up, it goes "hello world", or something like that. Pretty
+When you start it up, it goes _"henlo world"_, or something like that. Pretty
 cool, right?
+
+Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 
 ### Roadmap
 
-- [ ] It says "Hi, $name", when you login with your `@uwblueprint.org` account.
+- [ ] It says _"Hi, $name"_, when you login with your `@uwblueprint.org` account.
 - [ ] It understands basic Blueprint concepts:
   - Member
     - Roles
@@ -23,6 +25,12 @@ cool, right?
 - ...
 
 ## Development
+
+### Option 1: Local
+
+TODO: Write instructions!
+
+### Option 2: Devcontainers
 
 1. Clone the repo:
 

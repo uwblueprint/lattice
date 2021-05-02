@@ -25,8 +25,9 @@ RUN addgroup -g 1001 -S docker && \
     chown -R docker:docker /app/lattice-api
 USER docker
 
+# TODO: Add healthchecks.
+
 ENV LATTICE_ENV=production
-ENV LATTICE_HOST=0.0.0.0
 ENV LATTICE_PORT=3000
 EXPOSE 3000
 ENTRYPOINT ["/app/lattice-api"]

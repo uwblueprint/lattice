@@ -1,7 +1,6 @@
 use crate::entities::*;
 
-use graphql::Context;
-use graphql::Object;
+use graphql::{Context, Object};
 
 #[derive(Debug, Clone)]
 pub struct Query;
