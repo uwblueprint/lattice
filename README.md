@@ -33,7 +33,7 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 > - [VSCode](https://code.visualstudio.com/)
 > - [Docker](https://www.docker.com/get-started)
 > - [Rust](https://www.rust-lang.org/tools/install)
-> - [Node via NVM](https://github.com/nvm-sh/nvm#installing-and-updating)
+> - [Node via Volta](https://docs.volta.sh/guide/getting-started)
 
 1. Clone the repo:
 
