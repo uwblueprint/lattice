@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  api:
+    image: stevenxie/lattice-api-devcontainer
+    build: ./api/.devcontainer
+    volumes:
+      - .:/workspace:cached
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["while sleep 1000; do :; done"]

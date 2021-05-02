@@ -1,0 +1,30 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.166.1/containers/typescript-node
+{
+  "name": "lattice-web",
+  "workspaceFolder": "/workspace/web",
+
+  // Docker Options:
+  "dockerComposeFile": [
+    "../../docker-compose.yml",
+    "./devcontainer.extend.yml"
+  ],
+  "service": "web",
+  "runServices": ["web"],
+  "shutdownAction": "none",
+  "initializeCommand": [
+    "docker-compose",
+    "-f",
+    "${localWorkspaceFolder}/../docker-compose.yml",
+    "rm",
+    "-sf",
+    "web"
+  ],
+  "postCreateCommand": "yarn install",
+
+  // VSCode Options:
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  },
+  "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+}

@@ -1,0 +1,39 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.166.1/containers/rust
+{
+  "name": "lattice-api",
+  "workspaceFolder": "/workspace/api",
+
+  // Docker Options:
+  "dockerComposeFile": [
+    "../../docker-compose.yml",
+    "./devcontainer.extend.yml"
+  ],
+  "service": "api",
+  "runServices": ["api"],
+  "shutdownAction": "none",
+  "initializeCommand": [
+    "docker-compose",
+    "-f",
+    "${localWorkspaceFolder}/../docker-compose.yml",
+    "rm",
+    "-sf",
+    "api"
+  ],
+
+  // VSCode Options:
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "lldb.executable": "/usr/bin/lldb",
+    "files.watcherExclude": {
+      "**/target/**": true
+    },
+    "rust-analyzer.updates.askBeforeDownload": false
+  },
+  // Add the IDs of extensions you want installed when the container is created.
+  "extensions": [
+    "matklad.rust-analyzer",
+    "bungcip.better-toml",
+    "vadimcn.vscode-lldb"
+  ]
+}
