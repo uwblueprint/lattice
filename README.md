@@ -26,22 +26,64 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 
 ## Development
 
-### Option 1: Local
+### Setup 1: Local
 
-TODO: Write instructions!
-
-### Option 2: Devcontainers
+> Make sure you have the following tools (or equivalents) installed:
+>
+> - [VSCode](https://code.visualstudio.com/)
+> - [Docker](https://www.docker.com/get-started)
+> - [Rust](https://www.rust-lang.org/tools/install)
+> - [Node via NVM](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 1. Clone the repo:
 
+   ```bash
+   git clone git@github.com:uwblueprint/lattice && \
+   cd ./lattice/
    ```
-   git clone git@github.com:uwblueprint/lattice
+
+2. Start services:
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Open workspace:
+
+   ```bash
+   code ./lattice.code-workspace
+   ```
+
+4. Install dependencies:
+
+   ```bash
+   # For api:
+   cd ./api/ && \
+   cargo check
+
+   # For web:
+   cd ./web/ && \
+   yarn install
+   ```
+
+### Setup 2: Devcontainers
+
+> Make sure you have the following tools (or equivalents) installed:
+>
+> - [VSCode](https://code.visualstudio.com/)
+> - [Docker](https://www.docker.com/get-started)
+
+1. Clone the repo:
+
+   ```bash
+   git clone git@github.com:uwblueprint/lattice && \
+   cd ./lattice/
    ```
 
 2. Start all services:
 
-   ```
-   docker-compose up -d
+   ```bash
+   docker-compose -f devcontainer.yml up -d
    ```
 
    Open your browser and navigate to [`localhost:3000`](http://localhost:3000) and [`localhost:8000`](http://localhost:8000) to make sure the frontend and backend are up and running as expected.

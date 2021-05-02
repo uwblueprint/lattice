@@ -5,10 +5,7 @@
   "workspaceFolder": "/workspace/web",
 
   // Docker Options:
-  "dockerComposeFile": [
-    "../../docker-compose.yml",
-    "./devcontainer.extend.yml"
-  ],
+  "dockerComposeFile": ["../../devcontainer.yml", "./devcontainer.extend.yml"],
   "service": "web",
   "runServices": ["web"],
   "shutdownAction": "none",
