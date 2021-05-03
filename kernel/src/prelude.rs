@@ -1,7 +1,6 @@
 pub use async_trait::async_trait;
 pub use derive_more::{From, FromStr, Into};
 pub use inherent::inherent;
-pub use lazy_static::lazy_static;
 
 pub use std::collections::HashMap as Map;
 pub use std::convert::{TryFrom, TryInto};
@@ -13,6 +12,9 @@ pub use std::time::Duration as StdDuration;
 
 pub use serde::de::DeserializeOwned;
 pub use serde::{Deserialize, Serialize};
+
+pub use futures::Stream;
+pub use futures::{FutureExt, StreamExt};
 
 pub use anyhow::Context as AnyhowContext;
 pub use anyhow::{bail, format_err};

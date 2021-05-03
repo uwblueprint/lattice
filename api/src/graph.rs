@@ -1,13 +1,6 @@
-use crate::entities::*;
+mod meta;
+mod prelude;
+mod query;
 
-use graphql::{Context, Object};
-
-#[derive(Debug, Clone)]
-pub struct Query;
-
-#[Object]
-impl Query {
-    async fn build_info<'a>(&self, ctx: &'a Context<'_>) -> &'a BuildInfo {
-        ctx.data_unchecked::<BuildInfo>()
-    }
-}
+pub use meta::*;
+pub use query::*;
