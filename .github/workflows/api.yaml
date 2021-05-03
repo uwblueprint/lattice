@@ -33,7 +33,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
-          context: ./api/
+          context: .
+          file: ./api/Dockerfile
           push: true
           tags: ${{ steps.generate-tags.outputs.tags }}
           cache-from: |
