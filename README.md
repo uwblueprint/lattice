@@ -28,59 +28,71 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 
 ### Setup 1: Local
 
-> Make sure you have the following tools (or equivalents) installed:
->
-> - [VSCode](https://code.visualstudio.com/)
-> - [Docker](https://www.docker.com/get-started)
-> - [Rust](https://www.rust-lang.org/tools/install)
-> - [Node via Volta](https://docs.volta.sh/guide/getting-started)
+1.  Make sure you have the following tools (or equivalents) installed:
 
-1. Clone the repo:
+    - [VSCode](https://code.visualstudio.com/)
+    - [Docker](https://www.docker.com/get-started)
+    - [Rust](https://www.rust-lang.org/tools/install)
+    - [Node via Volta](https://docs.volta.sh/guide/getting-started)
+
+1.  Clone the repo:
+
+    ```bash
+    git clone git@github.com:uwblueprint/lattice && \
+    cd ./lattice/
+    ```
+
+1.  Start services:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+1.  Open workspace:
+
+    ```bash
+    code ./lattice.code-workspace
+    ```
+
+1.  Install dependencies:
+
+    ```bash
+    # For api:
+    cd ./api/ && \
+    cargo check
+
+    # For web:
+    cd ./web/ && \
+    yarn install
+    ```
+
+### Setup 2: [Devcontainers](https://code.visualstudio.com/docs/remote/containers)
+
+> #### DISCLAIMER:
+>
+> I really wanted to try out the _devcontainer_ experience with this project,
+> but unfortunately it turns that you need a _really hecking beefy_ system
+> for the VSCode Rust integration performance to be _remotely tolerable_—and
+> so, alas, for this particular project, I must concede that **devcontainers are
+> not it, chief**.
+>
+> However, I will leave the setup instructions up in case anybody wants to
+> mimic it for other multi-root workspaces, or if they have a _really hecking
+> beefy_ computer.
+
+1. Make sure you have the following tools (or equivalents) installed:
+
+   - [VSCode](https://code.visualstudio.com/)
+   - [Docker](https://www.docker.com/get-started)
+
+2. Clone the repo:
 
    ```bash
    git clone git@github.com:uwblueprint/lattice && \
    cd ./lattice/
    ```
 
-2. Start services:
-
-   ```bash
-   docker-compose up -d
-   ```
-
-3. Open workspace:
-
-   ```bash
-   code ./lattice.code-workspace
-   ```
-
-4. Install dependencies:
-
-   ```bash
-   # For api:
-   cd ./api/ && \
-   cargo check
-
-   # For web:
-   cd ./web/ && \
-   yarn install
-   ```
-
-### Setup 2: Devcontainers
-
-> Make sure you have the following tools (or equivalents) installed:
->
-> - [VSCode](https://code.visualstudio.com/)
-> - [Docker](https://www.docker.com/get-started)
-
-1. Clone the repo:
-
-   ```bash
-   git clone git@github.com:uwblueprint/lattice && \
-   cd ./lattice/
-   ```
-
-2. Start all services:
+3. Start all services:
 
    ```bash
    docker-compose -f devcontainer.yml up -d
@@ -88,7 +100,7 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 
    Open your browser and navigate to [`localhost:3000`](http://localhost:3000) and [`localhost:8000`](http://localhost:8000) to make sure the frontend and backend are up and running as expected.
 
-3. Open a service devcontainer:
+4. Open a service devcontainer:
 
    - Open VSCode (`code .`)
    - Run the command: `Remote-Containers: Open Workspace in Container...`
