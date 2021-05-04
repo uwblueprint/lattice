@@ -1,7 +1,6 @@
 use lattice_kernel as lattice;
 
-use lattice::entities::User;
-use lattice::entities::{Context, Entity, ObjectId};
+use chrono::Utc;
 
 use anyhow::Context as AnyhowContext;
 use anyhow::Result;
@@ -9,7 +8,10 @@ use anyhow::Result;
 use mongodb::options::ClientOptions;
 use mongodb::Client;
 
-use chrono::Utc;
+use std::thread::sleep;
+use std::time::Duration;
+
+use lattice::entities::*;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -22,21 +24,21 @@ async fn main() -> Result<()> {
     };
 
     let user1 = {
-        let now = Utc::now();
-        let user = User {
-            id: ObjectId::new(),
-            created_at: now,
-            updated_at: now,
-
-            firebase_id: "abcd1234".to_owned(),
-            email: "steven.xie@uwblueprint.org".to_owned(),
-        };
+        println!("current time: {}", Utc::now());
+        sleep(Duration::from_secs(1));
+        let user = User::builder()
+            .firebase_id("abcd1234")
+            .email("steven.xie@uwblueprint.org")
+            .first_name("Steven")
+            .last_name("Xie")
+            .build();
+        println!("User: {:?}", &user);
         user.save(&ctx).await.context("failed to save user")?;
         user
     };
 
     let user2 = {
-        let user: Option<User> = User::find_by_firebase_id("abcd1234")
+        let user: Option<User> = User::find(&user1.id)
             .load(&ctx)
             .await
             .context("failed to load user")?;

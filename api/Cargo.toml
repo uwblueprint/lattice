@@ -25,6 +25,7 @@ inherent = "^0.1.6"
 mongodb = "^2.0.0-alpha.1"
 bson = "^1.2.2"
 derive_more = "^0.99.13"
+base64 = "^0.13.0"
 
 [dependencies.request]
 package = "reqwest"

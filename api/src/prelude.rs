@@ -1,5 +1,5 @@
 pub use async_trait::async_trait;
-pub use derive_more::{From, FromStr, Into};
+pub use derive_more::{Deref, From, FromStr, Into};
 pub use inherent::inherent;
 pub use lazy_static::lazy_static;
 
@@ -8,11 +8,14 @@ pub use std::convert::{TryFrom, TryInto};
 pub use std::fmt::{Debug, Display};
 pub use std::future::Future;
 pub use std::marker::PhantomData;
+pub use std::str::FromStr;
 pub use std::sync::Arc;
 pub use std::time::Duration as StdDuration;
 
 pub use serde::de::DeserializeOwned;
-pub use serde::{Deserialize, Serialize};
+pub use serde::de::Error as DeserializeError;
+pub use serde::ser::Error as SerializeError;
+pub use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 pub use anyhow::Context as AnyhowContext;
 pub use anyhow::{bail, format_err};

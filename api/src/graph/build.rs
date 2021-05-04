@@ -1,15 +1,15 @@
 use super::prelude::*;
 
-#[derive(Debug, Clone, From)]
+#[derive(Debug, Clone, From, Deref)]
 pub struct BuildInfoObject(BuildInfo);
 
 #[Object(name = "BuildInfo")]
 impl BuildInfoObject {
     async fn timestamp(&self) -> &DateTime<FixedOffset> {
-        &self.0.timestamp
+        &self.timestamp
     }
 
     async fn version(&self) -> Option<&String> {
-        self.0.version.as_ref()
+        self.version.as_ref()
     }
 }

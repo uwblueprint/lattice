@@ -8,6 +8,7 @@ edition = "2018"
 anyhow = "^1.0.40"
 async_trait = { package = "async-trait", version = "^0.1.50" }
 bson = "^1.2.2"
+builder = { package = "typed-builder", version = "^0.9.0" }
 chrono = { version = "^0.4.19", features = ["serde"] }
 derive_more = "^0.99.13"
 dotenv = "^0.15.0"
@@ -15,6 +16,7 @@ futures = "^0.3.14"
 inherent = "^0.1.6"
 mongodb = "^2.0.0-alpha.1"
 serde = { version = "^1.0.125", features = ["derive"] }
+strum = { version = "^0.20.0", features = ["derive"] }
 tracing = "^0.1.26"
 
 [dev-dependencies]

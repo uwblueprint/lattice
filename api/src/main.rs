@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use http::StatusCode;
 use tokio::runtime::Builder as RuntimeBuilder;
 use tracing_subscriber::fmt::init as init_tracer;
@@ -50,8 +48,8 @@ fn main() -> Result<()> {
     init_tracer();
 
     // Read build info.
-    let timestamp =
-        DateTime::<FixedOffset>::parse_from_rfc3339(env!("BUILD_TIMESTAMP"))
+    let timestamp: DateTime<FixedOffset> =
+        DateTime::parse_from_rfc3339(env!("BUILD_TIMESTAMP"))
             .context("failed to parse build timestamp")?;
     let version = match env!("BUILD_VERSION") {
         "" => None,
