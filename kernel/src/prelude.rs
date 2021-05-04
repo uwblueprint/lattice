@@ -1,8 +1,8 @@
 pub use async_trait::async_trait;
-pub use builder::TypedBuilder as Builder;
 pub use derive_more::{Deref, Display, From, FromStr, Into};
 pub use inherent::inherent;
 pub use strum::EnumString;
+pub use typed_builder::TypedBuilder as Builder;
 
 pub use std::collections::HashMap as Map;
 pub use std::convert::{TryFrom, TryInto};

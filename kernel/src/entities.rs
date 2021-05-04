@@ -32,13 +32,13 @@ pub trait Object:
 
     fn to_document(&self) -> BsonSerResult<Document> {
         let mut doc = to_document(self)?;
-        let id = doc.remove("id").expect("missing ID field");
+        let id = doc.remove("id").expect("missing `id` field");
         doc.insert("_id", id);
         Ok(doc)
     }
 
     fn from_document(mut doc: Document) -> BsonDeResult<Self> {
-        let id = doc.remove("_id").expect("missing ID field");
+        let id = doc.remove("_id").expect("missing `_id` field");
         doc.insert("id", id);
         from_document(doc)
     }
@@ -58,21 +58,21 @@ pub trait Entity: Object {
     }
 
     fn find(id: &ObjectId) -> FindOneQuery<Self> {
-        let filter = doc! { "_id": id };
-        Self::find_by(filter)
+        Self::find_by(doc! { "_id": id })
     }
 
     async fn save(&self, ctx: &Context) -> InsertResult {
         let collection = Self::collection(ctx);
         let doc = self.to_document()?;
         let id = {
-            let id = doc.get("_id").expect("missing ID field");
+            let id = doc.get("_id").expect("missing `_id` field");
             id.as_object_id()
-                .expect("document ID should be an ObjectID")
+                .expect("`_id` field should be an ObjectId")
         };
-        let query = doc! { "_id": id };
         let options = ReplaceOptions::builder().upsert(true).build();
-        collection.replace_one(query, doc, options).await?;
+        collection
+            .replace_one(doc! { "_id": id }, doc, options)
+            .await?;
         Ok(())
     }
 }
@@ -82,21 +82,21 @@ pub type InsertResult = Result<(), MongoError>;
 
 #[derive(Debug, Clone)]
 pub struct FindOneQuery<T: Entity> {
-    query: Document,
+    filter: Document,
     phantom: PhantomData<T>,
 }
 
 impl<T: Entity> FindOneQuery<T> {
     pub fn new(filter: Document) -> Self {
         Self {
-            query: filter,
+            filter,
             phantom: PhantomData,
         }
     }
 
     pub async fn load(self, ctx: &Context) -> QueryResult<Option<T>> {
         let collection = T::collection(ctx);
-        let doc = collection.find_one(self.query, None).await?;
+        let doc = collection.find_one(self.filter, None).await?;
         let doc = match doc {
             Some(doc) => doc,
             None => return Ok(None),
