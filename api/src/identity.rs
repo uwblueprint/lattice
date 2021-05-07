@@ -34,6 +34,7 @@ impl Identity {
         Self(data)
     }
 
+    #[allow(dead_code)]
     pub fn header(&self) -> &Header {
         &self.0.header
     }

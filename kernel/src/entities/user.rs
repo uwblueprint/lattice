@@ -45,7 +45,7 @@ impl User {
     pub fn find_by_firebase_id(
         firebase_id: impl Into<String>,
     ) -> FindOneQuery<Self> {
-        let id: String = firebase_id.into();
+        let id = firebase_id.into();
         Self::find_by(doc! { "firebase_id": id })
     }
 }

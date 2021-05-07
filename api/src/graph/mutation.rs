@@ -1,10 +1,10 @@
 use super::prelude::*;
 
 #[derive(Debug, Clone, MergedObject)]
-pub struct Query(BuildQuery, UserQuery);
+pub struct Mutation(UserMutation);
 
-impl Query {
+impl Mutation {
     pub fn new() -> Self {
-        Self(BuildQuery, UserQuery)
+        Self(UserMutation)
     }
 }

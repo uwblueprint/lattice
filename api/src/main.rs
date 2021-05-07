@@ -22,7 +22,7 @@ use warp::{Filter, Rejection};
 use graphql::http::playground_source as graphql_playground_source;
 use graphql::http::GraphQLPlaygroundConfig;
 use graphql::Request as GraphQLRequest;
-use graphql::{EmptyMutation, EmptySubscription, Schema};
+use graphql::{EmptySubscription, Schema};
 
 use graphql_warp::graphql as warp_graphql;
 use graphql_warp::graphql_subscription as warp_graphql_subscription;
@@ -38,7 +38,7 @@ mod graph;
 mod identity;
 mod prelude;
 
-use graph::Query;
+use graph::{Query,Mutation};
 use identity::{FirebaseIdentifier, Identifier, Identity};
 use prelude::*;
 
@@ -65,9 +65,14 @@ fn main() -> Result<()> {
     };
 
     // Build GraphQL schema.
-    let schema = Schema::build(Query, EmptyMutation, EmptySubscription)
-        .data(build_info)
-        .finish();
+    let schema = {
+        let query = Query::new();
+        let mutation = Mutation::new();
+        let subscription = EmptySubscription;
+        Schema::build(query, mutation, subscription)
+            .data(build_info)
+            .finish()
+    };
 
     // Build GraphQL filters
     let graphql = {
@@ -107,13 +112,16 @@ fn main() -> Result<()> {
     );
 
     // Build root filter.
-    let root = api.recover(|err: Rejection| async move {
-        let (error, status_code) = if err.is_not_found() {
+    let root = api.recover(|rejection: Rejection| async move {
+        let (error, status_code) = if rejection.is_not_found() {
             let error = ServerError::new("not found");
             (error, StatusCode::NOT_FOUND)
-        } else if let Some(BadGraphQLRequest(err)) = err.find() {
+        } else if let Some(BadGraphQLRequest(err)) = rejection.find() {
             let error = ServerError::new(err.to_string());
             (error, StatusCode::BAD_REQUEST)
+        } else if let Some(error) = rejection.find::<Error>() {
+            let error = ServerError::new(format!("{:#}", error));
+            (error, StatusCode::INTERNAL_SERVER_ERROR)
         } else {
             let error = ServerError::new("internal server error");
             (error, StatusCode::INTERNAL_SERVER_ERROR)

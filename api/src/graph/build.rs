@@ -13,3 +13,14 @@ impl BuildInfoObject {
         self.version.as_ref()
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct BuildQuery;
+
+#[Object]
+impl BuildQuery {
+    async fn build_info(&self, ctx: &Context<'_>) -> BuildInfoObject {
+        let info = ctx.data_unchecked::<BuildInfo>().clone();
+        info.into()
+    }
+}

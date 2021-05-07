@@ -61,7 +61,7 @@ pub trait Entity: Object {
         Self::find_by(doc! { "_id": id })
     }
 
-    async fn save(&self, ctx: &Context) -> InsertResult {
+    async fn save(&self, ctx: &Context) -> SaveResult {
         let collection = Self::collection(ctx);
         let doc = self.to_document()?;
         let id = {
@@ -78,7 +78,7 @@ pub trait Entity: Object {
 }
 
 pub type QueryResult<T> = Result<T, MongoError>;
-pub type InsertResult = Result<(), MongoError>;
+pub type SaveResult = Result<(), MongoError>;
 
 #[derive(Debug, Clone)]
 pub struct FindOneQuery<T: Entity> {
