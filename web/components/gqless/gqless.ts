@@ -8,13 +8,15 @@ import { scalarsEnumsHash } from "./schema.generated";
 import { generatedSchema, GeneratedSchema } from "./schema.generated";
 import { SchemaObjectTypes, SchemaObjectTypesNames } from "./schema.generated";
 
+import { getApp as getFirebaseApp } from "firebase/app";
 import { getAuth as getFirebaseAuth } from "firebase/auth";
 import { Auth as FirebaseAuth } from "firebase/auth";
 import { useFirebaseToken } from "components/firebase";
 
 const getFirebaseAuthIfInitialized = (): FirebaseAuth | undefined => {
   try {
-    return getFirebaseAuth();
+    const app = getFirebaseApp();
+    return getFirebaseAuth(app);
   } catch (error) {
     throw new Error(`Failed get Firebase Auth module: ${error}`);
   }

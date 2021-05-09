@@ -7,13 +7,10 @@ import { Button } from "@chakra-ui/react";
 import { useViewerQuery, useSignIn, useSignOut } from "components";
 
 const Home: FC = () => {
-  const { viewer } = useViewerQuery({
-    onError: (error) => {
-      console.error({ error });
-    },
-  });
+  const { viewer } = useViewerQuery();
   const signIn = useSignIn();
   const signOut = useSignOut();
+  console.log({ viewer });
   return (
     <Container as={VStack} py={8}>
       {viewer && (

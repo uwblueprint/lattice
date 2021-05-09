@@ -44,7 +44,6 @@ impl UserQuery {
             .await
             .context("failed to load user")?;
         let user = user.map(UserObject::from);
-        println!("user: {:?}", &user);
         Ok(user)
     }
 }

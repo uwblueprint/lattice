@@ -13,6 +13,8 @@ use anyhow::Result;
 use warp::header::optional as header;
 use warp::http::Response as HttpResponse;
 use warp::path::end as path_end;
+use warp::path::full as full_path;
+use warp::path::FullPath;
 use warp::reject::custom as custom_rejection;
 use warp::reject::Reject;
 use warp::reply::json as reply_json;
@@ -90,7 +92,7 @@ async fn main() -> Result<()> {
             .finish()
     };
 
-    // Build GraphQL filters
+    // Build GraphQL filter.
     let graphql = {
         let identifier = Arc::new(identifier);
         warp_graphql(schema.clone())
@@ -110,48 +112,54 @@ async fn main() -> Result<()> {
                 },
             )
     };
-
     let graphql_subscription = warp_graphql_subscription(schema);
-    let graphql_playground = get().map(|| {
-        let config = GraphQLPlaygroundConfig::new("/api/graphql")
-            .subscription_endpoint("/api/graphql");
-        let source = graphql_playground_source(config);
-        HttpResponse::builder()
-            .header("content-type", "text/html")
-            .body(source)
-    });
-
-    // Build API routes.
-    let api = path("api").and(
-        path_end()
-            .and(graphql_playground)
-            .or(path("graphql").and(graphql_subscription.or(graphql))),
-    );
+    let graphql_playground = get()
+        .and(full_path())
+        .and(header("X-Forwarded-Prefix"))
+        .map(|path: FullPath, prefix: Option<String>| {
+            let endpoint = {
+                let path = path.as_str();
+                let prefix = prefix.as_ref().map(String::as_str).unwrap_or("/");
+                format!("{}{}graphql", prefix, path)
+            };
+            let config = GraphQLPlaygroundConfig::new(&endpoint)
+                .subscription_endpoint(&endpoint);
+            let source = graphql_playground_source(config);
+            HttpResponse::builder()
+                .header("content-type", "text/html")
+                .body(source)
+        });
+    let graphql_filter = path("graphql")
+        .and(path_end())
+        .and(graphql_subscription.or(graphql));
 
     // Build root filter.
-    let root = api.recover(|rejection: Rejection| async move {
-        let (error, status_code) = if rejection.is_not_found() {
-            let error = ServerError::new("not found");
-            (error, StatusCode::NOT_FOUND)
-        } else if let Some(BadGraphQLRequest(err)) = rejection.find() {
-            let error = ServerError::new(err.to_string());
-            (error, StatusCode::BAD_REQUEST)
-        } else if let Some(error) = rejection.find::<Error>() {
-            let error = ServerError::new(format!("{:#}", error));
-            (error, StatusCode::INTERNAL_SERVER_ERROR)
-        } else {
-            let error = ServerError::new("internal server error");
-            (error, StatusCode::INTERNAL_SERVER_ERROR)
-        };
+    let filter = any()
+        .and(path_end().and(graphql_playground))
+        .or(graphql_filter)
+        .recover(|rejection: Rejection| async move {
+            let (error, status_code) = if rejection.is_not_found() {
+                let error = ServerError::new("not found");
+                (error, StatusCode::NOT_FOUND)
+            } else if let Some(BadGraphQLRequest(err)) = rejection.find() {
+                let error = ServerError::new(err.to_string());
+                (error, StatusCode::BAD_REQUEST)
+            } else if let Some(error) = rejection.find::<Error>() {
+                let error = ServerError::new(format!("{:#}", error));
+                (error, StatusCode::INTERNAL_SERVER_ERROR)
+            } else {
+                let error = ServerError::new("internal server error");
+                (error, StatusCode::INTERNAL_SERVER_ERROR)
+            };
 
-        let reply = ServerRejectionReply {
-            errors: vec![error],
-            status_code: status_code.as_u16(),
-        };
-        let reply = reply_json(&reply);
-        let reply = reply_with_status(reply, status_code);
-        Ok::<_, Infallible>(reply)
-    });
+            let reply = ServerRejectionReply {
+                errors: vec![error],
+                status_code: status_code.as_u16(),
+            };
+            let reply = reply_json(&reply);
+            let reply = reply_with_status(reply, status_code);
+            Ok::<_, Infallible>(reply)
+        });
 
     let host =
         env_var_or("HOST", "0.0.0.0").context("failed to get server host")?;
@@ -162,7 +170,7 @@ async fn main() -> Result<()> {
         .context("failed to parse server address")?;
 
     info!(target: "server", "listening on http://{}", &addr);
-    serve(root).run(addr).await;
+    serve(filter).run(addr).await;
     Ok(())
 }
 
