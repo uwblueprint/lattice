@@ -74,8 +74,8 @@ async fn main() -> Result<()> {
 
     // Build identitifier.
     let identifier = {
-        let project_id = env_var("FIREBASE_PROJECT_ID")
-            .context("failed to parse firebase ID")?;
+        let project_id =
+            env_var("FIREBASE_ID").context("failed to parse firebase ID")?;
         FirebaseIdentifier::new(project_id)
     };
 

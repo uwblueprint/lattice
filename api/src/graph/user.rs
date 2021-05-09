@@ -64,6 +64,10 @@ impl UserMutation {
             email,
             ..
         } = with_identity(ctx)?;
+        if !email.ends_with("@uwblueprint.org") {
+            let error = format_err!("invalid email domain");
+            return Err(error.into());
+        }
 
         let RegisterUserInput {
             first_name,
