@@ -1,13 +1,36 @@
 import React, { FC } from "react";
+import {
+  coolGray,
+  yellow,
+  emerald,
+  teal,
+  blue,
+  indigo,
+  violet,
+  pink,
+  rose,
+} from "tailwindcss/colors";
 
 import { ChakraProvider as Provider } from "@chakra-ui/react";
-import { Theme, extendTheme } from "@chakra-ui/react";
+import { Theme, useTheme, extendTheme } from "@chakra-ui/react";
+import { transparentize } from "@chakra-ui/theme-tools";
 
 const Fonts =
   "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, " +
   "'Helvetica Neue', Arial, 'Noto Sans', sans-serif";
 
 export const ChakraTheme: Theme = extendTheme({
+  colors: {
+    gray: coolGray,
+    red: rose,
+    yellow,
+    green: emerald,
+    teal,
+    blue,
+    indigo,
+    purple: violet,
+    pink,
+  },
   fonts: {
     body: Fonts,
     heading: Fonts,
@@ -39,3 +62,8 @@ export const ChakraTheme: Theme = extendTheme({
 export const ChakraProvider: FC = ({ children }) => (
   <Provider theme={ChakraTheme}>{children}</Provider>
 );
+
+export const useTransparentize = (color: string, opacity: number): string => {
+  const theme = useTheme();
+  return transparentize(color, opacity)(theme);
+};

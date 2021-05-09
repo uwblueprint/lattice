@@ -15,13 +15,19 @@ pub struct User {
     pub firebase_id: String,
 
     #[builder(setter(into))]
-    pub email: String,
-
-    #[builder(setter(into))]
     pub first_name: String,
 
     #[builder(setter(into))]
     pub last_name: String,
+
+    #[builder(setter(into))]
+    pub email: String,
+
+    #[builder(default, setter(into))]
+    pub phone: Option<String>,
+
+    #[builder(default, setter(into))]
+    pub photo_url: Option<String>,
 }
 
 impl Object for User {

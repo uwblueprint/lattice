@@ -1,11 +1,9 @@
+import { selectFields } from "gqless";
+import { RegisterUserInput } from "schema";
+
 import { useFirebaseSignIn, useFirebaseAuth } from "components";
 import { useQuery, useRefetch, useMutation } from "components";
 import { useNotify } from "components";
-
-import { GQlessClient } from "components";
-import { prepass } from "gqless";
-
-import { RegisterUserInput } from "schema";
 
 export const useSignIn = (): (() => void) => {
   const notify = useNotify();
@@ -14,21 +12,27 @@ export const useSignIn = (): (() => void) => {
 
   const [registerUser] = useMutation(
     (mutation, args: RegisterUserInput) => {
-      const payload = mutation.registerUser({
+      const { user, isNewUser } = mutation.registerUser({
         input: args,
       });
-      return prepass(
-        payload,
-        ["user", "id", "firstName", "lastName"],
-        "isNewUser"
-      );
+      return {
+        user: selectFields(user, [
+          "id",
+          "firstName",
+          "lastName",
+          "fullName",
+          "email",
+          "phone",
+          "photoUrl",
+        ]),
+        isNewUser,
+      };
     },
     {
       onCompleted: ({ user, isNewUser }) => {
-        const { id: userId, firstName, lastName } = user;
-        const name = `${firstName} ${lastName}`;
+        const { id: userId, fullName } = user;
         console.info(
-          `[components/authentication] signed in as ${name} (${userId})`
+          `[components/authentication] signed in as ${fullName} (${userId})`
         );
         if (isNewUser) {
           refetch(() => query.viewer?.id);
@@ -44,7 +48,7 @@ export const useSignIn = (): (() => void) => {
     }
   );
   return useFirebaseSignIn(({ user }) => {
-    const { displayName } = user;
+    const { displayName, phoneNumber, photoURL } = user;
     if (!displayName) {
       console.error(`[components/authentication] missing display name`);
     }
@@ -53,6 +57,8 @@ export const useSignIn = (): (() => void) => {
       args: {
         firstName: firstName || "(Unknown)",
         lastName: lastName || "",
+        phone: phoneNumber,
+        photoUrl: photoURL,
       },
     });
   });

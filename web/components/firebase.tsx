@@ -125,6 +125,9 @@ export const useFirebaseSignIn = (
       const result = await signInWithPopup(auth, provider);
       callback(result);
     } catch (error) {
+      if (error.code === "auth/popup-closed-by-user") {
+        return;
+      }
       console.error("[components/firebase] sign-in failed", { error });
       notify({
         status: "error",

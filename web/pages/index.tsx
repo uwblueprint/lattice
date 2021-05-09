@@ -1,29 +1,41 @@
 import React, { FC } from "react";
+import { selectFields } from "gqless";
 
-import { Container, VStack } from "@chakra-ui/react";
+import { Box, Container, VStack } from "@chakra-ui/react";
 import { Text } from "@chakra-ui/react";
-import { Button } from "@chakra-ui/react";
 
-import { useViewerQuery, useSignIn, useSignOut } from "components";
+import { PageLayout } from "components";
+import { useViewerQuery } from "components";
 
 const Home: FC = () => {
   const { viewer } = useViewerQuery();
-  const signIn = useSignIn();
-  const signOut = useSignOut();
   return (
-    <Container as={VStack} py={8}>
-      {viewer && (
-        <Text>
-          You are{" "}
-          <Text as="span" fontWeight="semibold">
-            {viewer.firstName} {viewer.lastName}
-          </Text>
-        </Text>
-      )}
-      <Button isFullWidth onClick={viewer ? signOut : signIn}>
-        Sign {viewer ? "Out" : "In"}
-      </Button>
-    </Container>
+    <PageLayout>
+      <Container as={VStack} align="stretch" py={8}>
+        <Box bg="blue.50" color="blue.600" p={2} rounded="md">
+          {viewer?.id ? (
+            <Text as="pre" fontSize="sm" whiteSpace="pre-wrap">
+              {JSON.stringify(
+                selectFields(viewer, [
+                  "id",
+                  "createdAt",
+                  "updatedAt",
+                  "firstName",
+                  "lastName",
+                  "email",
+                  "phone",
+                  "photoUrl",
+                ]),
+                undefined,
+                2
+              )}
+            </Text>
+          ) : (
+            <Text>Sign in with your UW Blueprint account.</Text>
+          )}
+        </Box>
+      </Container>
+    </PageLayout>
   );
 };
 

@@ -20,7 +20,7 @@ export interface Scalars {
   Int: number;
   Float: number;
   /**
-   * Implement the DateTime<FixedOffset> scalar
+   * Implement the DateTime<Utc> scalar
    *
    * The input/output is a string in RFC3339 format.
    */
@@ -30,6 +30,8 @@ export interface Scalars {
 export interface RegisterUserInput {
   firstName: Scalars["String"];
   lastName: Scalars["String"];
+  phone?: Maybe<Scalars["String"]>;
+  photoUrl?: Maybe<Scalars["String"]>;
 }
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
@@ -62,6 +64,8 @@ export const generatedSchema = {
   RegisterUserInput: {
     firstName: { __type: "String!" },
     lastName: { __type: "String!" },
+    phone: { __type: "String" },
+    photoUrl: { __type: "String" },
   },
   RegisterUserPayload: {
     __typename: { __type: "String!" },
@@ -71,9 +75,14 @@ export const generatedSchema = {
   User: {
     __typename: { __type: "String!" },
     id: { __type: "ID!" },
-    email: { __type: "String!" },
+    createdAt: { __type: "DateTime!" },
+    updatedAt: { __type: "DateTime!" },
     firstName: { __type: "String!" },
     lastName: { __type: "String!" },
+    fullName: { __type: "String!" },
+    email: { __type: "String!" },
+    phone: { __type: "String" },
+    photoUrl: { __type: "String" },
   },
 } as const;
 
@@ -107,9 +116,14 @@ export interface RegisterUserPayload {
 export interface User {
   __typename: "User" | undefined;
   id: ScalarsEnums["ID"];
-  email: ScalarsEnums["String"];
+  createdAt: ScalarsEnums["DateTime"];
+  updatedAt: ScalarsEnums["DateTime"];
   firstName: ScalarsEnums["String"];
   lastName: ScalarsEnums["String"];
+  fullName: ScalarsEnums["String"];
+  email: ScalarsEnums["String"];
+  phone?: Maybe<ScalarsEnums["String"]>;
+  photoUrl?: Maybe<ScalarsEnums["String"]>;
 }
 
 export interface SchemaObjectTypes {

@@ -1,15 +1,10 @@
 use lattice_kernel as lattice;
 
-use chrono::Utc;
-
 use anyhow::Context as AnyhowContext;
 use anyhow::Result;
 
 use mongodb::options::ClientOptions;
 use mongodb::Client;
-
-use std::thread::sleep;
-use std::time::Duration;
 
 use lattice::entities::*;
 
@@ -20,7 +15,7 @@ async fn main() -> Result<()> {
         let client = Client::with_options(options)
             .context("failed to build MongoDB client")?;
         let database = client.database("lattice");
-        Context { database }
+        Context::new(database)
     };
 
     let user1 = {

@@ -11,7 +11,7 @@ const config = {
     endpoint: "http://localhost:3000/graphql",
     headers: {},
   },
-  destination: "./components/gqless/index.ts",
+  destination: "./components/gqless/gqless.ts",
   subscriptions: false,
   javascriptOutput: false,
 };

@@ -10,8 +10,12 @@ impl UserObject {
         self.global_id().into()
     }
 
-    async fn email(&self) -> &String {
-        &self.email
+    async fn created_at(&self) -> &DateTime {
+        &self.created_at
+    }
+
+    async fn updated_at(&self) -> &DateTime {
+        &self.updated_at
     }
 
     async fn first_name(&self) -> &String {
@@ -20,6 +24,22 @@ impl UserObject {
 
     async fn last_name(&self) -> &String {
         &self.last_name
+    }
+
+    async fn full_name(&self) -> String {
+        format!("{} {}", &self.first_name, &self.last_name)
+    }
+
+    async fn email(&self) -> &String {
+        &self.email
+    }
+
+    async fn phone(&self) -> Option<&String> {
+        self.phone.as_ref()
+    }
+
+    async fn photo_url(&self) -> Option<&String> {
+        self.photo_url.as_ref()
     }
 }
 
@@ -71,6 +91,8 @@ impl UserMutation {
         let RegisterUserInput {
             first_name,
             last_name,
+            phone,
+            photo_url,
         } = input;
 
         let existing_user = User::find_by_firebase_id(firebase_id)
@@ -80,17 +102,21 @@ impl UserMutation {
         let is_new_user = existing_user.is_none();
 
         let user = match existing_user {
-            Some(mut user) => {
-                user.email = email.to_owned();
-                user.first_name = first_name.to_owned();
-                user.last_name = last_name.to_owned();
-                user
-            }
+            Some(user) => User {
+                first_name,
+                last_name,
+                email: email.to_owned(),
+                phone,
+                photo_url,
+                ..user
+            },
             None => User::builder()
                 .firebase_id(firebase_id)
-                .email(email)
                 .first_name(first_name)
                 .last_name(last_name)
+                .email(email)
+                .phone(phone)
+                .photo_url(photo_url)
                 .build(),
         };
         user.save(ctx.entity())
@@ -107,6 +133,8 @@ impl UserMutation {
 struct RegisterUserInput {
     first_name: String,
     last_name: String,
+    phone: Option<String>,
+    photo_url: Option<String>,
 }
 
 #[derive(Debug, Clone, SimpleObject)]
