@@ -1,22 +1,39 @@
-import { prepass } from "gqless";
-
-import { useFirebaseSignIn } from "components";
-import { useMutation } from "components";
+import { useFirebaseSignIn, useFirebaseAuth } from "components";
+import { useQuery, useRefetch, useMutation } from "components";
 import { useNotify } from "components";
 
+import { GQlessClient } from "components";
+import { prepass } from "gqless";
+
 import { RegisterUserInput } from "schema";
-import { useFirebaseAuth } from "./firebase";
 
 export const useSignIn = (): (() => void) => {
   const notify = useNotify();
+  const query = useQuery();
+  const refetch = useRefetch();
+
   const [registerUser] = useMutation(
     (mutation, args: RegisterUserInput) => {
       const payload = mutation.registerUser({
         input: args,
       });
-      prepass(payload, "user.id");
+      return prepass(
+        payload,
+        ["user", "id", "firstName", "lastName"],
+        "isNewUser"
+      );
     },
     {
+      onCompleted: ({ user, isNewUser }) => {
+        const { id: userId, firstName, lastName } = user;
+        const name = `${firstName} ${lastName}`;
+        console.info(
+          `[components/authentication] signed in as ${name} (${userId})`
+        );
+        if (isNewUser) {
+          refetch(() => query.viewer?.id);
+        }
+      },
       onError: (error) => {
         notify({
           status: "error",

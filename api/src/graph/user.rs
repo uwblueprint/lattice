@@ -73,11 +73,13 @@ impl UserMutation {
             last_name,
         } = input;
 
-        let user = User::find_by_firebase_id(firebase_id)
+        let existing_user = User::find_by_firebase_id(firebase_id)
             .load(ctx.entity())
             .await
             .context("failed to load user")?;
-        let user = match user {
+        let is_new_user = existing_user.is_none();
+
+        let user = match existing_user {
             Some(mut user) => {
                 user.email = email.to_owned();
                 user.first_name = first_name.to_owned();
@@ -96,18 +98,19 @@ impl UserMutation {
             .context("failed to save user")?;
 
         let user = UserObject::from(user);
-        let payload = RegisterUserPayload { user };
+        let payload = RegisterUserPayload { user, is_new_user };
         Ok(payload)
     }
 }
 
 #[derive(Debug, Clone, InputObject)]
-pub struct RegisterUserInput {
+struct RegisterUserInput {
     first_name: String,
     last_name: String,
 }
 
 #[derive(Debug, Clone, SimpleObject)]
-pub struct RegisterUserPayload {
+struct RegisterUserPayload {
     user: UserObject,
+    is_new_user: bool,
 }

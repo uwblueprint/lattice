@@ -7,6 +7,7 @@ use std::borrow::Cow;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::ops::Deref;
+use std::path::Path;
 
 use anyhow::Context as AnyhowContext;
 use anyhow::Result;
@@ -123,9 +124,11 @@ async fn main() -> Result<()> {
         .and(header("X-Forwarded-Prefix"))
         .map(|path: FullPath, prefix: Option<String>| {
             let endpoint = {
+                let prefix = prefix.as_ref().map(String::as_str).unwrap_or("");
                 let path = path.as_str();
-                let prefix = prefix.as_ref().map(String::as_str).unwrap_or("/");
-                format!("{}{}graphql", prefix, path)
+                let root = Path::new(path).join(prefix);
+                let root = root.to_str().unwrap();
+                format!("{}graphql", root)
             };
             let config = GraphQLPlaygroundConfig::new(&endpoint)
                 .subscription_endpoint(&endpoint);

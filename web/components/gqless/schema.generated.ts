@@ -66,6 +66,7 @@ export const generatedSchema = {
   RegisterUserPayload: {
     __typename: { __type: "String!" },
     user: { __type: "User!" },
+    isNewUser: { __type: "Boolean!" },
   },
   User: {
     __typename: { __type: "String!" },
@@ -100,6 +101,7 @@ export interface BuildInfo {
 export interface RegisterUserPayload {
   __typename: "RegisterUserPayload" | undefined;
   user: User;
+  isNewUser: ScalarsEnums["Boolean"];
 }
 
 export interface User {

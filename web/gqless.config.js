@@ -8,7 +8,7 @@ const config = {
     DateTime: "string",
   },
   introspection: {
-    endpoint: "http://localhost:3000/api/graphql",
+    endpoint: "http://localhost:3000/graphql",
     headers: {},
   },
   destination: "./components/gqless/index.ts",

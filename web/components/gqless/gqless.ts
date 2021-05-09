@@ -73,15 +73,6 @@ export const GQlessClient = createClient<
 });
 
 export const {
-  query,
-  mutation,
-  mutate,
-  subscription,
-  resolved,
-  refetch,
-} = GQlessClient;
-
-export const {
   graphql,
   useQuery,
   usePaginatedQuery,
