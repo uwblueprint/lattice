@@ -10,7 +10,6 @@ const Home: FC = () => {
   const { viewer } = useViewerQuery();
   const signIn = useSignIn();
   const signOut = useSignOut();
-  console.log({ viewer });
   return (
     <Container as={VStack} py={8}>
       {viewer && (

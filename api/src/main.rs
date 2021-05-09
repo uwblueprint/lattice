@@ -1,3 +1,4 @@
+use bson::doc;
 use http::StatusCode;
 use mongodb::Client;
 use tracing_subscriber::fmt::init as init_tracer;
@@ -63,14 +64,18 @@ async fn main() -> Result<()> {
 
     // Build entity context.
     let context = {
-        let uri = env_var_or("FIREBASE_MONGO_URI", "mongodb://localhost:27017")
+        let uri = env_var_or("DATABASE_URI", "mongodb://localhost:27017")
             .context("failed to get MongoDB URI")?;
         let client = Client::with_uri_str(&uri)
             .await
             .context("failed to build MongoDB client")?;
-        let database_name = env_var_or("FIREBASE_MONGO_DATABASE", "lattice")
+        let database_name = env_var_or("DATABASE_NAME", "lattice")
             .context("failed to get MongoDB database name")?;
         let database = client.database(&database_name);
+        database
+            .run_command(doc! { "ping": 1 }, None)
+            .await
+            .context("failed to connect to MongoDB")?;
         Context::new(database)
     };
 
