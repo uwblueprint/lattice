@@ -27,5 +27,6 @@
   ],
   "rules": {
     "react/prop-types": "off"
+    // "@typescript-eslint/no-non-null-assertion": "warn"
   }
 }

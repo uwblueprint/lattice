@@ -6,7 +6,7 @@
       "utils": ["./utils"],
       "config": ["./config"],
       "assets": ["./assets"],
-      "styles": ["./styles"],
+      "schema": ["./components/gqless/schema.generated.ts"],
       "components": ["./components"]
     },
     "target": "es5",

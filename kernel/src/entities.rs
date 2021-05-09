@@ -16,7 +16,13 @@ use mongodb::error::Error as MongoError;
 use mongodb::options::ReplaceOptions;
 
 pub struct Context {
-    pub database: Database,
+    database: Database,
+}
+
+impl Context {
+    pub fn new(database: Database) -> Self {
+        Self { database }
+    }
 }
 
 pub trait Object:

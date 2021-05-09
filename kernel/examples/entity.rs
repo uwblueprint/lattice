@@ -24,15 +24,12 @@ async fn main() -> Result<()> {
     };
 
     let user1 = {
-        println!("current time: {}", Utc::now());
-        sleep(Duration::from_secs(1));
         let user = User::builder()
             .firebase_id("abcd1234")
             .email("steven.xie@uwblueprint.org")
             .first_name("Steven")
             .last_name("Xie")
             .build();
-        println!("User: {:?}", &user);
         user.save(&ctx).await.context("failed to save user")?;
         user
     };

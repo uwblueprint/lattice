@@ -1,5 +1,5 @@
 use http::StatusCode;
-use tokio::runtime::Builder as RuntimeBuilder;
+use mongodb::Client;
 use tracing_subscriber::fmt::init as init_tracer;
 
 use std::borrow::Cow;
@@ -12,6 +12,7 @@ use anyhow::Result;
 
 use warp::header::optional as header;
 use warp::http::Response as HttpResponse;
+use warp::path::end as path_end;
 use warp::reject::custom as custom_rejection;
 use warp::reject::Reject;
 use warp::reply::json as reply_json;
@@ -29,7 +30,7 @@ use graphql_warp::graphql_subscription as warp_graphql_subscription;
 use graphql_warp::BadRequest as BadGraphQLRequest;
 use graphql_warp::Response as GraphQLResponse;
 
-use lattice::entities::BuildInfo;
+use lattice::entities::{BuildInfo, Context};
 use lattice::env::load as load_env;
 use lattice::env::var as env_var;
 use lattice::env::var_or as env_var_or;
@@ -38,11 +39,12 @@ mod graph;
 mod identity;
 mod prelude;
 
-use graph::{Query,Mutation};
+use graph::{Mutation, Query};
 use identity::{FirebaseIdentifier, Identifier, Identity};
 use prelude::*;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     // Load environment variables and initialize tracer.
     load_env().context("failed to load environment variables")?;
     init_tracer();
@@ -56,6 +58,19 @@ fn main() -> Result<()> {
         version => Some(version.to_owned()),
     };
     let build_info = BuildInfo { timestamp, version };
+
+    // Build entity context.
+    let context = {
+        let uri = env_var_or("FIREBASE_MONGO_URI", "mongodb://localhost:27017")
+            .context("failed to get MongoDB URI")?;
+        let client = Client::with_uri_str(&uri)
+            .await
+            .context("failed to build MongoDB client")?;
+        let database_name = env_var_or("FIREBASE_MONGO_DATABASE", "lattice")
+            .context("failed to get MongoDB database name")?;
+        let database = client.database(&database_name);
+        Context::new(database)
+    };
 
     // Build identitifier.
     let identifier = {
@@ -71,6 +86,7 @@ fn main() -> Result<()> {
         let subscription = EmptySubscription;
         Schema::build(query, mutation, subscription)
             .data(build_info)
+            .data(context)
             .finish()
     };
 
@@ -107,7 +123,8 @@ fn main() -> Result<()> {
 
     // Build API routes.
     let api = path("api").and(
-        graphql_playground
+        path_end()
+            .and(graphql_playground)
             .or(path("graphql").and(graphql_subscription.or(graphql))),
     );
 
@@ -144,15 +161,9 @@ fn main() -> Result<()> {
         .parse()
         .context("failed to parse server address")?;
 
-    let runtime = RuntimeBuilder::new_multi_thread()
-        .enable_io()
-        .build()
-        .context("failed to build Tokio runtime")?;
-    runtime.block_on(async {
-        info!(target: "server", "listening on http://{}", &addr);
-        serve(root).run(addr).await;
-        Ok(())
-    })
+    info!(target: "server", "listening on http://{}", &addr);
+    serve(root).run(addr).await;
+    Ok(())
 }
 
 fn identify(

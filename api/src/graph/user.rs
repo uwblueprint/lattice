@@ -39,13 +39,12 @@ impl UserQuery {
             }
             None => return Ok(None),
         };
-
         let user = User::find_by_firebase_id(firebase_id)
             .load(ctx.entity())
             .await
             .context("failed to load user")?;
-
         let user = user.map(UserObject::from);
+        println!("user: {:?}", &user);
         Ok(user)
     }
 }
@@ -71,18 +70,27 @@ impl UserMutation {
             last_name,
         } = input;
 
-        let user = {
-            let user = User::builder()
+        let user = User::find_by_firebase_id(firebase_id)
+            .load(ctx.entity())
+            .await
+            .context("failed to load user")?;
+        let user = match user {
+            Some(mut user) => {
+                user.email = email.to_owned();
+                user.first_name = first_name.to_owned();
+                user.last_name = last_name.to_owned();
+                user
+            }
+            None => User::builder()
                 .firebase_id(firebase_id)
                 .email(email)
                 .first_name(first_name)
                 .last_name(last_name)
-                .build();
-            user.save(ctx.entity())
-                .await
-                .context("failed to save user")?;
-            user
+                .build(),
         };
+        user.save(ctx.entity())
+            .await
+            .context("failed to save user")?;
 
         let user = UserObject::from(user);
         let payload = RegisterUserPayload { user };
