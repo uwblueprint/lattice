@@ -6,6 +6,12 @@ use base64::encode as encode_base64;
 #[derive(Debug, Clone, Into, From, Deref)]
 pub struct NodeId(GlobalId);
 
+impl NodeId {
+    pub fn get<T: Object>(self) -> Option<ObjectId> {
+        self.0.get::<T>()
+    }
+}
+
 impl Serialize for NodeId {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where

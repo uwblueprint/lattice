@@ -1,10 +1,10 @@
 use super::prelude::*;
 
 #[derive(Debug, Clone, MergedObject)]
-pub struct Mutation(UserMutation);
+pub struct Mutation(UserMutations, MembershipMutations);
 
 impl Mutation {
     pub fn new() -> Self {
-        Self(UserMutation)
+        Self(UserMutations, MembershipMutations)
     }
 }

@@ -1,6 +1,7 @@
 use super::prelude::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]
+#[builder(field_defaults(setter(into)))]
 pub struct User {
     #[builder(default, setter(skip))]
     pub id: ObjectId,
@@ -11,22 +12,15 @@ pub struct User {
     #[builder(default = Utc::now(), setter(skip))]
     pub updated_at: DateTime,
 
-    #[builder(setter(into))]
     pub firebase_id: String,
-
-    #[builder(setter(into))]
     pub first_name: String,
-
-    #[builder(setter(into))]
     pub last_name: String,
-
-    #[builder(setter(into))]
     pub email: String,
 
-    #[builder(default, setter(into))]
+    #[builder(default)]
     pub phone: Option<String>,
 
-    #[builder(default, setter(into))]
+    #[builder(default)]
     pub photo_url: Option<String>,
 }
 

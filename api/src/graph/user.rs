@@ -44,10 +44,10 @@ impl UserObject {
 }
 
 #[derive(Debug, Clone)]
-pub struct UserQuery;
+pub struct UserQueries;
 
 #[Object]
-impl UserQuery {
+impl UserQueries {
     async fn viewer(
         &self,
         ctx: &Context<'_>,
@@ -66,13 +66,25 @@ impl UserQuery {
         let user = user.map(UserObject::from);
         Ok(user)
     }
+
+    // TODO: Paginate!
+    async fn users(&self, ctx: &Context<'_>) -> FieldResult<Vec<UserObject>> {
+        let users = User::all()
+            .load(ctx.entity())
+            .await
+            .context("failed to load users")?;
+        let users: Vec<_> =
+            users.try_collect().await.context("failed to load users")?;
+        let users: Vec<_> = users.into_iter().map(UserObject::from).collect();
+        Ok(users)
+    }
 }
 
 #[derive(Debug, Clone)]
-pub struct UserMutation;
+pub struct UserMutations;
 
 #[Object]
-impl UserMutation {
+impl UserMutations {
     async fn register_user(
         &self,
         ctx: &Context<'_>,

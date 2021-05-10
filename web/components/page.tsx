@@ -1,11 +1,20 @@
 import React, { FC } from "react";
+import NextLink from "next/link";
 
 import { HiLogin, HiLogout } from "react-icons/hi";
 import { HiUser } from "react-icons/hi";
 
-import { Box, BoxProps, HStack, VStack, Spacer } from "@chakra-ui/react";
+import {
+  Box,
+  BoxProps,
+  HStack,
+  VStack,
+  Spacer,
+  ButtonProps,
+} from "@chakra-ui/react";
 import { Text, Icon } from "@chakra-ui/react";
 import { Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
 import { Avatar } from "@chakra-ui/react";
 import { Skeleton } from "@chakra-ui/react";
 
@@ -13,13 +22,14 @@ import { ExternalLink } from "components";
 import { useQuery } from "components";
 import { useSignIn, useSignOut } from "components";
 import { useTransparentize } from "components";
+import { useRouter } from "next/dist/client/router";
 
 export type PageHeaderProps = BoxProps;
 
 export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
   const {
-    viewer,
     $state: { isLoading },
+    viewer,
   } = useQuery();
   const { fullName, photoUrl } = viewer ?? {};
 
@@ -47,6 +57,8 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
         </ExternalLink>
       </VStack>
       <Spacer />
+      <PageHeaderNavigation />
+      <Spacer />
       <Menu>
         <MenuButton
           rounded="full"
@@ -59,9 +71,10 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
             <Avatar
               src={photoUrl ?? undefined}
               name={fullName}
-              icon={<Icon as={HiUser} fontSize="xl" color="blue.600" />}
+              icon={<Icon as={HiUser} fontSize="xl" />}
               boxSize={10}
               bg={avatarBg}
+              color="blue.500"
             />
           </Skeleton>
         </MenuButton>
@@ -81,6 +94,61 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
         </MenuList>
       </Menu>
     </HStack>
+  );
+};
+
+type PageHeaderNavigationProps = BoxProps;
+
+const PageHeaderNavigation: FC<PageHeaderNavigationProps> = ({
+  ...otherProps
+}) => {
+  return (
+    <HStack align="stretch" spacing={1} color="white" {...otherProps}>
+      <PageHeaderNavigationItem path="/">Home</PageHeaderNavigationItem>
+      <PageHeaderNavigationItem path="/directory">
+        Directory
+      </PageHeaderNavigationItem>
+      <PageHeaderNavigationItem path="/organization">
+        Organization
+      </PageHeaderNavigationItem>
+    </HStack>
+  );
+};
+
+interface PageHeaderNavigationItemProps extends ButtonProps {
+  path: string;
+}
+
+const PageHeaderNavigationItem: FC<PageHeaderNavigationItemProps> = ({
+  path: href,
+  children,
+  ...otherProps
+}) => {
+  const { pathname } = useRouter();
+  const isActive = pathname === href;
+  return (
+    // <Box
+    //   rounded="lg"
+    //   px={2}
+    //   py={1}
+    //   transitionProperty="colors"
+    //   transitionDuration="200ms"
+    // >
+    <NextLink href={href} passHref>
+      <Button
+        size="sm"
+        colorScheme="blue"
+        rounded="lg"
+        bg={isActive ? "blue.700" : undefined}
+        _hover={{ bg: "blue.700" }}
+        {...otherProps}
+      >
+        <Text fontSize="md" fontWeight="medium">
+          {children}
+        </Text>
+      </Button>
+    </NextLink>
+    // </Box>
   );
 };
 

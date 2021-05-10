@@ -888,6 +888,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "dotenv",
+ "futures",
  "git2",
  "http",
  "inherent",

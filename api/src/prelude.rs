@@ -1,12 +1,14 @@
 pub use async_trait::async_trait;
-pub use derive_more::{Deref, From, FromStr, Into};
+pub use derive_more::{AsRef, Deref, From, FromStr, Into};
 pub use inherent::inherent;
 pub use lazy_static::lazy_static;
+
+pub use futures::Future;
+pub use futures::{StreamExt, TryStreamExt};
 
 pub use std::collections::HashMap as Map;
 pub use std::convert::{TryFrom, TryInto};
 pub use std::fmt::{Debug, Display};
-pub use std::future::Future;
 pub use std::marker::PhantomData;
 pub use std::str::FromStr;
 pub use std::sync::Arc;

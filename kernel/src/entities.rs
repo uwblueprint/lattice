@@ -1,9 +1,12 @@
-mod build;
-mod meta;
 mod prelude;
+
+mod build;
+mod membership;
+mod meta;
 mod user;
 
 pub use build::*;
+pub use membership::*;
 pub use meta::*;
 pub use user::*;
 
@@ -13,7 +16,7 @@ use ::bson::de::Result as BsonDeResult;
 use ::bson::ser::Result as BsonSerResult;
 
 use mongodb::error::Error as MongoError;
-use mongodb::options::ReplaceOptions;
+use mongodb::options::{FindOptions, ReplaceOptions};
 
 pub struct Context {
     database: Database,
@@ -67,6 +70,14 @@ pub trait Entity: Object {
         Self::find_by(doc! { "_id": id })
     }
 
+    fn all() -> FindQuery<Self> {
+        Self::filter(Document::default())
+    }
+
+    fn filter(filter: Document) -> FindQuery<Self> {
+        FindQuery::new(filter)
+    }
+
     async fn save(&self, ctx: &Context) -> SaveResult {
         let collection = Self::collection(ctx);
         let doc = self.to_document()?;
@@ -81,10 +92,18 @@ pub trait Entity: Object {
             .await?;
         Ok(())
     }
+
+    async fn delete(&self, ctx: &Context) -> DeleteResult {
+        let collection = Self::collection(ctx);
+        let id = self.object_id();
+        collection.delete_one(doc! { "_id": id }, None).await?;
+        Ok(())
+    }
 }
 
 pub type QueryResult<T> = Result<T, MongoError>;
 pub type SaveResult = Result<(), MongoError>;
+pub type DeleteResult = Result<(), MongoError>;
 
 #[derive(Debug, Clone)]
 pub struct FindOneQuery<T: Entity> {
@@ -114,16 +133,38 @@ impl<T: Entity> FindOneQuery<T> {
 
 pub struct FindQuery<T: Entity> {
     filter: Document,
+    options: FindOptions,
     phantom: PhantomData<T>,
 }
 
 impl<T: Entity> FindQuery<T> {
+    pub fn new(filter: Document) -> Self {
+        Self {
+            filter,
+            options: FindOptions::default(),
+            phantom: PhantomData,
+        }
+    }
+
+    pub async fn skip(&mut self, n: impl Into<Option<u32>>) -> &Self {
+        self.options.skip = n.into().map(Into::into);
+        self
+    }
+
+    pub async fn take(&mut self, n: impl Into<Option<u32>>) -> &Self {
+        self.options.limit = n.into().map(Into::into);
+        self
+    }
+
     pub async fn load(
         self,
         ctx: &Context,
     ) -> QueryResult<impl Stream<Item = QueryResult<T>>> {
+        let Self {
+            filter, options, ..
+        } = self;
         let collection = T::collection(ctx);
-        let cursor = collection.find(self.filter, None).await?;
+        let cursor = collection.find(filter, options).await?;
         let stream = cursor.map(|doc| -> QueryResult<T> {
             let doc = match doc {
                 Ok(doc) => doc,

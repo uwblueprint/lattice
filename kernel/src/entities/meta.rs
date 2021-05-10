@@ -2,9 +2,21 @@ use super::prelude::*;
 
 pub use bson::oid::ObjectId;
 
-#[derive(Debug, Display, Clone, Hash, EnumString, Serialize, Deserialize)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Hash,
+    PartialEq,
+    Eq,
+    EnumString,
+    Serialize,
+    Deserialize,
+)]
 pub enum ObjectType {
     User,
+    Membership,
+    MemberRole,
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +38,26 @@ impl GlobalId {
         let object_type = T::OBJECT_TYPE;
         Self::new(object_id, object_type)
     }
+
+    pub fn get<T: Object>(self) -> Option<ObjectId> {
+        let Self {
+            object_id,
+            object_type,
+        } = self;
+        if object_type == T::OBJECT_TYPE {
+            Some(object_id)
+        } else {
+            None
+        }
+    }
+
+    // pub fn object_id<T: Object>(&self) -> Result<&ObjectId> {
+    //     &self.object_id
+    // }
+
+    // pub fn object_id_unchecked(&self) -> &ObjectId {
+    //     &self.object_id
+    // }
 }
 
 impl Display for GlobalId {

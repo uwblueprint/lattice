@@ -27,11 +27,26 @@ export interface Scalars {
   DateTime: string;
 }
 
+export interface CreateMemberRoleInput {
+  name: Scalars["String"];
+  description: Scalars["String"];
+}
+
+export interface DeleteMemberRoleInput {
+  roleId: Scalars["ID"];
+}
+
 export interface RegisterUserInput {
   firstName: Scalars["String"];
   lastName: Scalars["String"];
   phone?: Maybe<Scalars["String"]>;
   photoUrl?: Maybe<Scalars["String"]>;
+}
+
+export interface UpdateMemberRoleInput {
+  roleId: Scalars["ID"];
+  name: Scalars["String"];
+  description: Scalars["String"];
 }
 
 export const scalarsEnumsHash: ScalarsEnumsHash = {
@@ -45,11 +60,25 @@ export const scalarsEnumsHash: ScalarsEnumsHash = {
 export const generatedSchema = {
   query: {
     __typename: { __type: "String!" },
+    memberRoles: { __type: "[MemberRole!]!" },
     viewer: { __type: "User" },
+    users: { __type: "[User!]!" },
     buildInfo: { __type: "BuildInfo!" },
   },
   mutation: {
     __typename: { __type: "String!" },
+    createMemberRole: {
+      __type: "CreateMemberRolePayload!",
+      __args: { input: "CreateMemberRoleInput!" },
+    },
+    updateMemberRole: {
+      __type: "UpdateMemberRolePayload!",
+      __args: { input: "UpdateMemberRoleInput!" },
+    },
+    deleteMemberRole: {
+      __type: "DeleteMemberRolePayload!",
+      __args: { input: "DeleteMemberRoleInput!" },
+    },
     registerUser: {
       __type: "RegisterUserPayload!",
       __args: { input: "RegisterUserInput!" },
@@ -61,6 +90,27 @@ export const generatedSchema = {
     timestamp: { __type: "DateTime!" },
     version: { __type: "String" },
   },
+  CreateMemberRoleInput: {
+    name: { __type: "String!" },
+    description: { __type: "String!" },
+  },
+  CreateMemberRolePayload: {
+    __typename: { __type: "String!" },
+    role: { __type: "MemberRole!" },
+  },
+  DeleteMemberRoleInput: { roleId: { __type: "ID!" } },
+  DeleteMemberRolePayload: {
+    __typename: { __type: "String!" },
+    roleId: { __type: "ID!" },
+  },
+  MemberRole: {
+    __typename: { __type: "String!" },
+    id: { __type: "ID!" },
+    createdAt: { __type: "DateTime!" },
+    updatedAt: { __type: "DateTime!" },
+    name: { __type: "String!" },
+    description: { __type: "String!" },
+  },
   RegisterUserInput: {
     firstName: { __type: "String!" },
     lastName: { __type: "String!" },
@@ -71,6 +121,15 @@ export const generatedSchema = {
     __typename: { __type: "String!" },
     user: { __type: "User!" },
     isNewUser: { __type: "Boolean!" },
+  },
+  UpdateMemberRoleInput: {
+    roleId: { __type: "ID!" },
+    name: { __type: "String!" },
+    description: { __type: "String!" },
+  },
+  UpdateMemberRolePayload: {
+    __typename: { __type: "String!" },
+    role: { __type: "MemberRole!" },
   },
   User: {
     __typename: { __type: "String!" },
@@ -88,12 +147,23 @@ export const generatedSchema = {
 
 export interface Query {
   __typename: "Query" | undefined;
+  memberRoles: Array<MemberRole>;
   viewer?: Maybe<User>;
+  users: Array<User>;
   buildInfo: BuildInfo;
 }
 
 export interface Mutation {
   __typename: "Mutation" | undefined;
+  createMemberRole: (args: {
+    input: CreateMemberRoleInput;
+  }) => CreateMemberRolePayload;
+  updateMemberRole: (args: {
+    input: UpdateMemberRoleInput;
+  }) => UpdateMemberRolePayload;
+  deleteMemberRole: (args: {
+    input: DeleteMemberRoleInput;
+  }) => DeleteMemberRolePayload;
   registerUser: (args: { input: RegisterUserInput }) => RegisterUserPayload;
 }
 
@@ -107,10 +177,34 @@ export interface BuildInfo {
   version?: Maybe<ScalarsEnums["String"]>;
 }
 
+export interface CreateMemberRolePayload {
+  __typename: "CreateMemberRolePayload" | undefined;
+  role: MemberRole;
+}
+
+export interface DeleteMemberRolePayload {
+  __typename: "DeleteMemberRolePayload" | undefined;
+  roleId: ScalarsEnums["ID"];
+}
+
+export interface MemberRole {
+  __typename: "MemberRole" | undefined;
+  id: ScalarsEnums["ID"];
+  createdAt: ScalarsEnums["DateTime"];
+  updatedAt: ScalarsEnums["DateTime"];
+  name: ScalarsEnums["String"];
+  description: ScalarsEnums["String"];
+}
+
 export interface RegisterUserPayload {
   __typename: "RegisterUserPayload" | undefined;
   user: User;
   isNewUser: ScalarsEnums["Boolean"];
+}
+
+export interface UpdateMemberRolePayload {
+  __typename: "UpdateMemberRolePayload" | undefined;
+  role: MemberRole;
 }
 
 export interface User {
@@ -131,7 +225,11 @@ export interface SchemaObjectTypes {
   Mutation: Mutation;
   Subscription: Subscription;
   BuildInfo: BuildInfo;
+  CreateMemberRolePayload: CreateMemberRolePayload;
+  DeleteMemberRolePayload: DeleteMemberRolePayload;
+  MemberRole: MemberRole;
   RegisterUserPayload: RegisterUserPayload;
+  UpdateMemberRolePayload: UpdateMemberRolePayload;
   User: User;
 }
 export type SchemaObjectTypesNames =
@@ -139,7 +237,11 @@ export type SchemaObjectTypesNames =
   | "Mutation"
   | "Subscription"
   | "BuildInfo"
+  | "CreateMemberRolePayload"
+  | "DeleteMemberRolePayload"
+  | "MemberRole"
   | "RegisterUserPayload"
+  | "UpdateMemberRolePayload"
   | "User";
 
 export interface GeneratedSchema {

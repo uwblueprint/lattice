@@ -10,6 +10,7 @@ async_trait = { package = "async-trait", version = "^0.1.50" }
 cache_control = "^0.1.0"
 chrono = { version = "^0.4.19", features = ["serde"] }
 dotenv = "^0.15.0"
+futures = "^0.3.14"
 graphql = { package = "async-graphql", version = "^2.8.4", features = ["chrono"] }
 graphql_warp = { package = "async-graphql-warp", version = "^2.8.4" }
 http = "^0.2.4"

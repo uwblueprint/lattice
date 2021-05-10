@@ -12,7 +12,7 @@ export const useSignIn = (): (() => void) => {
 
   const [registerUser] = useMutation(
     (mutation, args: RegisterUserInput) => {
-      const { user, isNewUser } = mutation.registerUser({
+      const { user, ...otherFields } = mutation.registerUser({
         input: args,
       });
       return {
@@ -25,7 +25,7 @@ export const useSignIn = (): (() => void) => {
           "phone",
           "photoUrl",
         ]),
-        isNewUser,
+        ...otherFields,
       };
     },
     {
@@ -38,11 +38,11 @@ export const useSignIn = (): (() => void) => {
           refetch(() => query.viewer?.id);
         }
       },
-      onError: (error) => {
+      onError: ({ message }) => {
         notify({
           status: "error",
           title: "Sign-in failed!",
-          description: error.message,
+          description: message,
         });
       },
     }
