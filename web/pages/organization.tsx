@@ -30,7 +30,7 @@ const Organization: FC = () => {
             </Text>
           </VStack>
           {!isEmpty(memberRoles) ? (
-            <VStack align="stretch" spacing={3}>
+            <VStack align="stretch">
               {memberRoles.map((role, index) => {
                 const { id: roleId } = role;
                 return (

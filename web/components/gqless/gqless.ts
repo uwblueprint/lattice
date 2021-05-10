@@ -11,7 +11,7 @@ import { SchemaObjectTypes, SchemaObjectTypesNames } from "./schema.generated";
 import { getApp as getFirebaseApp } from "firebase/app";
 import { getAuth as getFirebaseAuth } from "firebase/auth";
 import { Auth as FirebaseAuth } from "firebase/auth";
-import { useFirebaseToken } from "components/firebase";
+import { useFirebaseUser } from "components/firebase";
 
 const getFirebaseAuthIfInitialized = (): FirebaseAuth | undefined => {
   try {
@@ -98,7 +98,7 @@ export const {
 export const useViewerQuery: UseQuery<GeneratedSchema> = (options) => {
   const refetch = useRefetch();
   const query = useQuery(options);
-  const token = useFirebaseToken();
+  const user = useFirebaseUser();
   useEffect(
     () => {
       const { viewer } = query;
@@ -108,7 +108,7 @@ export const useViewerQuery: UseQuery<GeneratedSchema> = (options) => {
         refetch();
       }
     },
-    [token] /* eslint-disable-line react-hooks/exhaustive-deps */
+    [user] /* eslint-disable-line react-hooks/exhaustive-deps */
   );
   return query;
 };

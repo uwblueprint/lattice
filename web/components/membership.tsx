@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 
 import { HiTrash } from "react-icons/hi";
 
-import { VStack } from "@chakra-ui/react";
+import { BoxProps, Box, VStack } from "@chakra-ui/react";
 import { Text, Icon, IconButton } from "@chakra-ui/react";
 import { FormLabel, FormControl } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 
 import { TextareaAutosize } from "components";
-import { Card, CardProps } from "components";
+import { Card } from "components";
 import { useNotify } from "components";
 import { useMutation } from "components";
 
@@ -35,7 +35,7 @@ import {
   DeleteMemberRoleInput,
 } from "schema";
 
-export interface MemberRoleCardProps extends Omit<CardProps, "role"> {
+export interface MemberRoleCardProps extends Omit<BoxProps, "role"> {
   role: MemberRole | undefined;
   onDelete?: () => void;
 }
@@ -76,35 +76,37 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
   );
 
   return (
-    <Card pos="relative" {...otherProps}>
-      <VStack align="stretch" spacing={1}>
-        <Text color="gray.800" fontSize="xl" fontWeight="semibold">
-          {name}
-        </Text>
-        <Text color="gray.500" noOfLines={8}>
-          {description}
-        </Text>
-      </VStack>
-      <IconButton
-        icon={<Icon as={HiTrash} />}
-        aria-label="Delete"
-        size="xs"
-        colorScheme="red"
-        isRound
-        onClick={() => {
-          if (role?.id) {
-            deleteRole({
-              args: {
-                roleId: role.id,
-              },
-            });
-          }
-        }}
-        pos="absolute"
-        top={-2}
-        right={-2}
-      />
-    </Card>
+    <Box pt={1} {...otherProps}>
+      <Card pos="relative">
+        <VStack align="stretch" spacing={1}>
+          <Text color="gray.800" fontSize="xl" fontWeight="semibold">
+            {name}
+          </Text>
+          <Text color="gray.500" noOfLines={8}>
+            {description}
+          </Text>
+        </VStack>
+        <IconButton
+          icon={<Icon as={HiTrash} />}
+          aria-label="Delete"
+          size="xs"
+          colorScheme="red"
+          isRound
+          onClick={() => {
+            if (role?.id) {
+              deleteRole({
+                args: {
+                  roleId: role.id,
+                },
+              });
+            }
+          }}
+          pos="absolute"
+          top={-2}
+          right={-2}
+        />
+      </Card>
+    </Box>
   );
 };
 
