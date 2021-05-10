@@ -57,9 +57,9 @@ const Organization: FC = () => {
               />
             )}
           >
-            {(open) => (
+            {({ open }) => (
               <Button colorScheme="blue" alignSelf="start" onClick={open}>
-                Add Role
+                New Role
               </Button>
             )}
           </ModalTrigger>

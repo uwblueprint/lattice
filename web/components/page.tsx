@@ -50,7 +50,7 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
           letterSpacing={0.85}
           opacity={0.6}
           transitionProperty="opacity "
-          transitionDuration="200ms"
+          transitionDuration="150ms"
           _hover={{ opacity: 0.8, textDecor: "underline" }}
         >
           UW BLUEPRINT
@@ -62,7 +62,7 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
       <Menu>
         <MenuButton
           rounded="full"
-          transitionDuration="200ms"
+          transitionDuration="150ms"
           borderWidth={3}
           borderColor="blue.500"
           _hover={{ opacity: 0.9 }}
@@ -127,13 +127,6 @@ const PageHeaderNavigationItem: FC<PageHeaderNavigationItemProps> = ({
   const { pathname } = useRouter();
   const isActive = pathname === href;
   return (
-    // <Box
-    //   rounded="lg"
-    //   px={2}
-    //   py={1}
-    //   transitionProperty="colors"
-    //   transitionDuration="200ms"
-    // >
     <NextLink href={href} passHref>
       <Button
         size="sm"

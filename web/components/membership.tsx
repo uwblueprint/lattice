@@ -1,10 +1,10 @@
-import React, { FC } from "react";
+import React, { FC, useEffect } from "react";
 import { selectFields } from "gqless";
 import { useForm } from "react-hook-form";
 
 import { HiTrash } from "react-icons/hi";
 
-import { BoxProps, Box, VStack } from "@chakra-ui/react";
+import { VStack } from "@chakra-ui/react";
 import { Text, Icon, IconButton } from "@chakra-ui/react";
 import { FormLabel, FormControl } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 
 import { TextareaAutosize } from "components";
-import { Card } from "components";
+import { Card, CardProps } from "components";
 import { useNotify } from "components";
 import { useMutation } from "components";
 
@@ -34,8 +34,9 @@ import {
   UpdateMemberRolePayload,
   DeleteMemberRoleInput,
 } from "schema";
+import { ModalTrigger } from "./modal";
 
-export interface MemberRoleCardProps extends Omit<BoxProps, "role"> {
+export interface MemberRoleCardProps extends Omit<CardProps, "role"> {
   role: MemberRole | undefined;
   onDelete?: () => void;
 }
@@ -76,23 +77,17 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
   );
 
   return (
-    <Box pt={1} {...otherProps}>
-      <Card pos="relative">
-        <VStack align="stretch" spacing={1}>
-          <Text color="gray.800" fontSize="xl" fontWeight="semibold">
-            {name}
-          </Text>
-          <Text color="gray.500" noOfLines={8}>
-            {description}
-          </Text>
-        </VStack>
-        <IconButton
-          icon={<Icon as={HiTrash} />}
-          aria-label="Delete"
-          size="xs"
-          colorScheme="red"
-          isRound
-          onClick={() => {
+    <ModalTrigger
+      renderModal={(disclosure) => (
+        <EditMemberRoleModal role={role} {...disclosure} />
+      )}
+    >
+      {({ open }) => (
+        <Card
+          title={name}
+          actions={["edit", "remove"]}
+          onClickEdit={open}
+          onClickRemove={() => {
             if (role?.id) {
               deleteRole({
                 args: {
@@ -101,12 +96,14 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
               });
             }
           }}
-          pos="absolute"
-          top={-2}
-          right={-2}
-        />
-      </Card>
-    </Box>
+          {...otherProps}
+        >
+          <Text color="gray.600" noOfLines={8}>
+            {description}
+          </Text>
+        </Card>
+      )}
+    </ModalTrigger>
   );
 };
 
@@ -187,10 +184,15 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
     }
   );
 
-  const { register, handleSubmit } = useForm<{
+  const { register, handleSubmit, reset } = useForm<{
     name: string;
     description: string;
   }>();
+  useEffect(
+    () => reset(),
+    [role] /* eslint-disable-line react-hooks/exhaustive-deps */
+  );
+
   const onSubmit = handleSubmit((values) => {
     if (role?.id) {
       updateRole({
@@ -206,13 +208,12 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
     }
   });
 
-  const action = role ? "Update" : "Create";
   const { name, description } = role ?? {};
   return (
     <Modal onClose={onClose} {...otherProps}>
       <ModalOverlay />
       <ModalContent as="form" onSubmit={onSubmit}>
-        <ModalHeader>{action} Member Role</ModalHeader>
+        <ModalHeader>{role ? "Edit" : "New"} Member Role</ModalHeader>
         <ModalCloseButton />
         <ModalBody as={VStack} align="stretch" spacing={4}>
           <FormControl isRequired>
@@ -245,7 +246,7 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
         </ModalBody>
         <ModalFooter>
           <Button type="submit" colorScheme="blue">
-            {action}
+            {role ? "Update" : "Create"}
           </Button>
         </ModalFooter>
       </ModalContent>
