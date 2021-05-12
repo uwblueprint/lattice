@@ -20,7 +20,6 @@ async fn main() -> Result<()> {
 
     let user1 = {
         let user = User::builder()
-            .firebase_id("abcd1234")
             .email("steven.xie@uwblueprint.org")
             .first_name("Steven")
             .last_name("Xie")

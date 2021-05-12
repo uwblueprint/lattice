@@ -12,7 +12,6 @@ pub struct User {
     #[builder(default = Utc::now(), setter(skip))]
     pub updated_at: DateTime,
 
-    pub firebase_id: String,
     pub first_name: String,
     pub last_name: String,
     pub email: String,
@@ -40,12 +39,5 @@ impl User {
     pub fn find_by_email(email: impl Into<String>) -> FindOneQuery<Self> {
         let email: String = email.into();
         Self::find_by(doc! { "email": email })
-    }
-
-    pub fn find_by_firebase_id(
-        firebase_id: impl Into<String>,
-    ) -> FindOneQuery<Self> {
-        let id = firebase_id.into();
-        Self::find_by(doc! { "firebase_id": id })
     }
 }

@@ -7,11 +7,10 @@
       "path": "web"
     },
     {
-      "path": ".",
-      "name": "root"
+      "path": "kernel"
     },
     {
-      "path": "kernel"
+      "path": "migrator"
     }
   ],
   "settings": {}

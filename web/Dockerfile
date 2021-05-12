@@ -30,4 +30,5 @@ USER docker
 
 ENV NODE_ENV=production
 EXPOSE 8000
-ENTRYPOINT ["yarn", "start"]
+ENTRYPOINT ["yarn"]
+CMD ["start"]

@@ -1,0 +1,23 @@
+{
+  "name": "lattice-migrator",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "generate": "migrate-mongo create",
+    "status": "migrate-mongo status",
+    "up": "migrate-mongo up",
+    "down": "migrate-mongo down",
+    "format": "prettier --write ."
+  },
+  "volta": {
+    "node": "14.16.1",
+    "yarn": "1.22.10"
+  },
+  "dependencies": {
+    "dotenv": "^9.0.2",
+    "migrate-mongo": "^8.2.2"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.0"
+  }
+}

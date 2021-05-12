@@ -52,14 +52,14 @@ impl UserQueries {
         &self,
         ctx: &Context<'_>,
     ) -> FieldResult<Option<UserObject>> {
-        let firebase_id = match ctx.data_opt::<Identity>() {
+        let email = match ctx.data_opt::<Identity>() {
             Some(identity) => {
-                let IdentityClaims { user_id, .. } = identity.claims();
-                user_id.as_str()
+                let IdentityClaims { email, .. } = identity.claims();
+                email.as_str()
             }
             None => return Ok(None),
         };
-        let user = User::find_by_firebase_id(firebase_id)
+        let user = User::find_by_email(email)
             .load(ctx.entity())
             .await
             .context("failed to load user")?;
@@ -90,11 +90,7 @@ impl UserMutations {
         ctx: &Context<'_>,
         input: RegisterUserInput,
     ) -> FieldResult<RegisterUserPayload> {
-        let IdentityClaims {
-            user_id: firebase_id,
-            email,
-            ..
-        } = with_identity(ctx)?;
+        let IdentityClaims { email, .. } = with_identity(ctx)?;
         if !email.ends_with("@uwblueprint.org") {
             let error = format_err!("invalid email domain");
             return Err(error.into());
@@ -107,7 +103,7 @@ impl UserMutations {
             photo_url,
         } = input;
 
-        let existing_user = User::find_by_firebase_id(firebase_id)
+        let existing_user = User::find_by_email(email)
             .load(ctx.entity())
             .await
             .context("failed to load user")?;
@@ -123,7 +119,6 @@ impl UserMutations {
                 ..user
             },
             None => User::builder()
-                .firebase_id(firebase_id)
                 .first_name(first_name)
                 .last_name(last_name)
                 .email(email)
