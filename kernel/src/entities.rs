@@ -81,11 +81,7 @@ pub trait Entity: Object {
     async fn save(&self, ctx: &Context) -> SaveResult {
         let collection = Self::collection(ctx);
         let doc = self.to_document()?;
-        let id = {
-            let id = doc.get("_id").expect("missing `_id` field");
-            id.as_object_id()
-                .expect("`_id` field should be an ObjectId")
-        };
+        let id = self.object_id();
         let options = ReplaceOptions::builder().upsert(true).build();
         collection
             .replace_one(doc! { "_id": id }, doc, options)
