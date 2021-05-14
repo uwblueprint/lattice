@@ -37,11 +37,13 @@ impl MembershipQueries {
         let roles = MemberRole::all()
             .load(ctx.entity())
             .await
-            .context("failed to load member roles")?;
+            .context("failed to load member roles")
+            .into_field_result()?;
         let roles: Vec<_> = roles
             .try_collect()
             .await
-            .context("failed to load member roles")?;
+            .context("failed to load member roles")
+            .into_field_result()?;
         let roles: Vec<_> =
             roles.into_iter().map(MemberRoleObject::from).collect();
         Ok(roles)
@@ -66,7 +68,8 @@ impl MembershipMutations {
             .build();
         role.save(ctx.entity())
             .await
-            .context("failed to save member role")?;
+            .context("failed to save member role")
+            .into_field_result()?;
 
         let role = MemberRoleObject::from(role);
         let payload = CreateMemberRolePayload { role };
@@ -91,8 +94,10 @@ impl MembershipMutations {
             let role = MemberRole::find(&role_id)
                 .load(ctx.entity())
                 .await
-                .context("failed to load member role")?
-                .context("member role not found")?;
+                .context("failed to load member role")
+                .into_field_result()?
+                .context("member role not found")
+                .into_field_result()?;
             MemberRole {
                 name,
                 description,
@@ -101,7 +106,8 @@ impl MembershipMutations {
         };
         role.save(ctx.entity())
             .await
-            .context("failed to save member role")?;
+            .context("failed to save member role")
+            .into_field_result()?;
 
         let role = MemberRoleObject::from(role);
         let payload = UpdateMemberRolePayload { role };
@@ -117,15 +123,18 @@ impl MembershipMutations {
 
         let role_id = role_id
             .get::<MemberRole>()
-            .context("invalid member role ID")?;
+            .context("invalid member role ID")
+            .into_field_result()?;
         let role = MemberRole::find(&role_id)
             .load(ctx.entity())
             .await
             .context("failed to load member role")?
-            .context("member role not found")?;
+            .context("member role not found")
+            .into_field_result()?;
         role.delete(ctx.entity())
             .await
-            .context("failed to delete member role")?;
+            .context("failed to delete member role")
+            .into_field_result()?;
 
         let payload = DeleteMemberRolePayload {
             role_id: role.global_id().into(),

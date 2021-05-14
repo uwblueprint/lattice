@@ -17,3 +17,17 @@ impl<'a> ContextExt for Context<'a> {
         self.data_unchecked()
     }
 }
+
+pub trait ResultExt<T> {
+    fn into_field_result(self) -> FieldResult<T>;
+}
+
+impl<T> ResultExt<T> for Result<T> {
+    fn into_field_result(self) -> FieldResult<T> {
+        let result = Result::from(self);
+        result.map_err(|error| {
+            let message = format!("{:#}", error);
+            FieldError::new(message)
+        })
+    }
+}

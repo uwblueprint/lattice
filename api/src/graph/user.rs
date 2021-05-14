@@ -62,19 +62,29 @@ impl UserQueries {
         let user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")?;
+            .context("failed to load user")
+            .into_field_result()?;
         let user = user.map(UserObject::from);
         Ok(user)
     }
 
     // TODO: Paginate!
-    async fn users(&self, ctx: &Context<'_>) -> FieldResult<Vec<UserObject>> {
-        let users = User::all()
+    async fn users(
+        &self,
+        ctx: &Context<'_>,
+        query: Option<String>,
+    ) -> FieldResult<Vec<UserObject>> {
+        let conditions = UserConditions::builder().query(query).build();
+        let users = User::filter(conditions)
             .load(ctx.entity())
             .await
-            .context("failed to load users")?;
-        let users: Vec<_> =
-            users.try_collect().await.context("failed to load users")?;
+            .context("failed to load users")
+            .into_field_result()?;
+        let users: Vec<_> = users
+            .try_collect()
+            .await
+            .context("failed to load users")
+            .into_field_result()?;
         let users: Vec<_> = users.into_iter().map(UserObject::from).collect();
         Ok(users)
     }
@@ -93,7 +103,7 @@ impl UserMutations {
         let IdentityClaims { email, .. } = with_identity(ctx)?;
         if !email.ends_with("@uwblueprint.org") {
             let error = format_err!("invalid email domain");
-            return Err(error.into());
+            return Err(error).into_field_result();
         }
 
         let RegisterUserInput {
@@ -106,7 +116,8 @@ impl UserMutations {
         let existing_user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")?;
+            .context("failed to load user")
+            .into_field_result()?;
         let is_new_user = existing_user.is_none();
 
         let user = match existing_user {
@@ -128,7 +139,8 @@ impl UserMutations {
         };
         user.save(ctx.entity())
             .await
-            .context("failed to save user")?;
+            .context("failed to save user")
+            .into_field_result()?;
 
         let user = UserObject::from(user);
         let payload = RegisterUserPayload { user, is_new_user };

@@ -41,3 +41,22 @@ impl User {
         Self::find_by(doc! { "email": email })
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Builder)]
+#[builder(field_defaults(default, setter(into)))]
+pub struct UserConditions {
+    pub query: Option<String>,
+}
+
+impl Into<Document> for UserConditions {
+    fn into(self) -> Document {
+        let Self { query } = self;
+
+        let mut doc = Document::new();
+        if let Some(query) = query {
+            doc.insert("$text", doc! { "$search": query });
+        }
+
+        doc
+    }
+}

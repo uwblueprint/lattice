@@ -16,7 +16,7 @@ use ::bson::de::Result as BsonDeResult;
 use ::bson::ser::Result as BsonSerResult;
 
 use mongodb::error::Error as MongoError;
-use mongodb::options::{FindOptions, ReplaceOptions};
+use mongodb::options::{FindOneOptions, FindOptions, ReplaceOptions};
 
 pub struct Context {
     database: Database,
@@ -62,7 +62,8 @@ pub trait Entity: Object {
         ctx.database.collection(name)
     }
 
-    fn find_by(filter: Document) -> FindOneQuery<Self> {
+    fn find_by(conditions: impl Into<Document>) -> FindOneQuery<Self> {
+        let filter: Document = conditions.into();
         FindOneQuery::new(filter)
     }
 
@@ -71,11 +72,12 @@ pub trait Entity: Object {
     }
 
     fn all() -> FindQuery<Self> {
-        Self::filter(Document::default())
+        Self::filter(Document::new())
     }
 
-    fn filter(filter: Document) -> FindQuery<Self> {
-        FindQuery::new(filter)
+    fn filter(conditions: impl Into<Document>) -> FindQuery<Self> {
+        let conditions: Document = conditions.into();
+        FindQuery::new(conditions)
     }
 
     async fn save(&self, ctx: &Context) -> SaveResult {
@@ -103,21 +105,28 @@ pub type DeleteResult = Result<(), MongoError>;
 
 #[derive(Debug, Clone)]
 pub struct FindOneQuery<T: Entity> {
-    filter: Document,
+    conditions: Document,
+    options: FindOneOptions,
     phantom: PhantomData<T>,
 }
 
 impl<T: Entity> FindOneQuery<T> {
-    pub fn new(filter: Document) -> Self {
+    pub fn new(conditions: Document) -> Self {
         Self {
-            filter,
+            conditions,
+            options: FindOneOptions::default(),
             phantom: PhantomData,
         }
     }
 
     pub async fn load(self, ctx: &Context) -> QueryResult<Option<T>> {
+        let Self {
+            conditions,
+            options,
+            ..
+        } = self;
         let collection = T::collection(ctx);
-        let doc = collection.find_one(self.filter, None).await?;
+        let doc = collection.find_one(conditions, options).await?;
         let doc = match doc {
             Some(doc) => doc,
             None => return Ok(None),
@@ -128,16 +137,21 @@ impl<T: Entity> FindOneQuery<T> {
 }
 
 pub struct FindQuery<T: Entity> {
-    filter: Document,
+    conditions: Document,
     options: FindOptions,
     phantom: PhantomData<T>,
 }
 
 impl<T: Entity> FindQuery<T> {
-    pub fn new(filter: Document) -> Self {
+    pub fn new(conditions: Document) -> Self {
+        let mut options = FindOptions::default();
+        if conditions.get("$text").is_some() {
+            let sort = doc! { "score": { "$meta": "textScore" } };
+            options.sort = Some(sort);
+        }
         Self {
-            filter,
-            options: FindOptions::default(),
+            conditions,
+            options,
             phantom: PhantomData,
         }
     }
@@ -157,10 +171,12 @@ impl<T: Entity> FindQuery<T> {
         ctx: &Context,
     ) -> QueryResult<impl Stream<Item = QueryResult<T>>> {
         let Self {
-            filter, options, ..
+            conditions,
+            options,
+            ..
         } = self;
         let collection = T::collection(ctx);
-        let cursor = collection.find(filter, options).await?;
+        let cursor = collection.find(conditions, options).await?;
         let stream = cursor.map(|doc| -> QueryResult<T> {
             let doc = match doc {
                 Ok(doc) => doc,
