@@ -1,48 +1,51 @@
 import React, { FC } from "react";
+import { useRouter } from "next/router";
 import NextLink from "next/link";
 
 import { HiLogin, HiLogout } from "react-icons/hi";
 import { HiUser } from "react-icons/hi";
 
-import {
-  Box,
-  BoxProps,
-  HStack,
-  VStack,
-  Spacer,
-  ButtonProps,
-} from "@chakra-ui/react";
-import { Text, Icon } from "@chakra-ui/react";
+import { Box, BoxProps, HStack, VStack, Spacer } from "@chakra-ui/react";
+import { Text, Link, Icon } from "@chakra-ui/react";
+import { ButtonProps } from "@chakra-ui/react";
 import { Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 import { Avatar } from "@chakra-ui/react";
 import { Skeleton } from "@chakra-ui/react";
 
 import { ExternalLink } from "components";
-import { useQuery } from "components";
+import { useViewerQuery } from "components";
 import { useSignIn, useSignOut } from "components";
 import { useTransparentize } from "components";
-import { useRouter } from "next/dist/client/router";
 
 export type PageHeaderProps = BoxProps;
 
 export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
+  const signIn = useSignIn();
+  const signOut = useSignOut();
+
   const {
     $state: { isLoading },
     viewer,
-  } = useQuery();
+  } = useViewerQuery();
   const { fullName, photoUrl } = viewer ?? {};
-
-  const signIn = useSignIn();
-  const signOut = useSignOut();
 
   const avatarBg = useTransparentize("white", 0.9);
   return (
     <HStack h={20} px={8} bg="blue.600" {...otherProps}>
       <VStack align="stretch" spacing={0} color="white">
-        <Text fontSize="lg" fontWeight="black" letterSpacing={4}>
-          LATTICE
-        </Text>
+        <NextLink href="/">
+          <Link
+            fontSize="lg"
+            fontWeight="black"
+            letterSpacing={4}
+            transitionProperty="opacity "
+            transitionDuration="150ms"
+            _hover={{ textDecor: "none" }}
+          >
+            LATTICE
+          </Link>
+        </NextLink>
         <ExternalLink
           href="https://uwblueprint.org"
           fontSize="xs"
@@ -51,7 +54,7 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
           opacity={0.6}
           transitionProperty="opacity "
           transitionDuration="150ms"
-          _hover={{ opacity: 0.8, textDecor: "underline" }}
+          _hover={{ opacity: 0.8 }}
         >
           UW BLUEPRINT
         </ExternalLink>

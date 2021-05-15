@@ -62,7 +62,7 @@ export const generatedSchema = {
     __typename: { __type: "String!" },
     memberRoles: { __type: "[MemberRole!]!" },
     viewer: { __type: "User" },
-    users: { __type: "[User!]!" },
+    users: { __type: "[User!]!", __args: { query: "String" } },
     buildInfo: { __type: "BuildInfo!" },
   },
   mutation: {
@@ -149,7 +149,7 @@ export interface Query {
   __typename: "Query" | undefined;
   memberRoles: Array<MemberRole>;
   viewer?: Maybe<User>;
-  users: Array<User>;
+  users: (args?: { query?: Maybe<Scalars["String"]> }) => Array<User>;
   buildInfo: BuildInfo;
 }
 
@@ -254,4 +254,4 @@ export type MakeNullable<T> = {
   [K in keyof T]: T[K] | undefined;
 };
 
-export interface ScalarsEnums extends MakeNullable<Scalars> {}
+export type ScalarsEnums = MakeNullable<Scalars>

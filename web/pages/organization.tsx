@@ -33,15 +33,7 @@ const Organization: FC = () => {
             <VStack align="stretch">
               {memberRoles.map((role, index) => {
                 const { id: roleId } = role;
-                return (
-                  <MemberRoleCard
-                    key={roleId ?? index}
-                    role={role}
-                    onDelete={() => {
-                      refetch();
-                    }}
-                  />
-                );
+                return <MemberRoleCard key={roleId ?? index} role={role} />;
               })}
             </VStack>
           ) : (

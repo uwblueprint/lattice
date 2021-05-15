@@ -17,7 +17,7 @@ import { browserLocalPersistence } from "firebase/auth";
 import { browserPopupRedirectResolver } from "firebase/auth";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
-import { useNotify } from "components";
+import { useToast } from "components";
 
 export type FirebaseApp = App;
 export type FirebaseAuth = Auth;
@@ -94,7 +94,7 @@ export const useFirebaseUser = (): FirebaseUser | null => {
       }
       setCurrentUser(user);
     });
-  }, [/* eslint-disable-line react-hooks/exhaustive-deps */ auth]);
+  }, [auth, currentUser]);
   return currentUser;
 };
 
@@ -117,7 +117,7 @@ export const useFirebaseToken = (): string | null => {
 export const useFirebaseSignIn = (
   callback: (credential: UserCredential) => void
 ): (() => void) => {
-  const notify = useNotify();
+  const toast = useToast();
   const auth = useFirebaseAuth();
   const provider = useMemo(() => new GoogleAuthProvider(), []);
   return async () => {
@@ -129,7 +129,7 @@ export const useFirebaseSignIn = (
         return;
       }
       console.error("[components/firebase] sign-in failed", { error });
-      notify({
+      toast({
         status: "error",
         title: "Sign-in failed",
         description: error.message,

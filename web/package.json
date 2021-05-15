@@ -31,12 +31,15 @@
     "react-hook-form": "^7.5.0",
     "react-icons": "^4.2.0",
     "react-textarea-autosize": "^8.3.2",
-    "tailwindcss": "^2.1.2"
+    "tailwindcss": "^2.1.2",
+    "use-debounce": "^6.0.1",
+    "voca": "^1.4.0"
   },
   "devDependencies": {
     "@gqless/cli": "^2.0.15",
     "@types/react": "^17.0.4",
     "@types/tailwindcss": "^2.0.3",
+    "@types/voca": "^1.4.0",
     "@typescript-eslint/eslint-plugin": "^4.22.1",
     "@typescript-eslint/parser": "^4.22.1",
     "eslint": "^7.25.0",

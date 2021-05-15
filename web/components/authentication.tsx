@@ -1,32 +1,32 @@
-import { selectFields } from "gqless";
+import { getFields } from "gqless";
 import { RegisterUserInput } from "schema";
 
 import { useFirebaseSignIn, useFirebaseAuth } from "components";
 import { useQuery, useRefetch, useMutation } from "components";
-import { useNotify } from "components";
+import { useToast } from "components";
 
 export const useSignIn = (): (() => void) => {
-  const notify = useNotify();
+  const toast = useToast();
   const query = useQuery();
   const refetch = useRefetch();
 
   const [registerUser] = useMutation(
     (mutation, args: RegisterUserInput) => {
-      const { user, ...otherFields } = mutation.registerUser({
+      const payload = mutation.registerUser({
         input: args,
       });
-      return {
-        user: selectFields(user, [
-          "id",
-          "firstName",
-          "lastName",
-          "fullName",
-          "email",
-          "phone",
-          "photoUrl",
-        ]),
-        ...otherFields,
-      };
+      getFields(payload);
+      getFields(
+        payload.user,
+        "id",
+        "firstName",
+        "lastName",
+        "fullName",
+        "email",
+        "phone",
+        "photoUrl"
+      );
+      return payload;
     },
     {
       onCompleted: ({ user, isNewUser }) => {
@@ -39,7 +39,7 @@ export const useSignIn = (): (() => void) => {
         }
       },
       onError: ({ message }) => {
-        notify({
+        toast({
           status: "error",
           title: "Sign-in failed!",
           description: message,
@@ -69,6 +69,7 @@ export const useSignOut = (): (() => void) => {
   return () => {
     if (auth) {
       auth.signOut();
+      console.info(`[components/authentication] signed out`);
     }
   };
 };

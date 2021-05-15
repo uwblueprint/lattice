@@ -1,11 +1,9 @@
 import React, { FC, useEffect } from "react";
-import { selectFields } from "gqless";
+import { getFields } from "gqless";
 import { useForm } from "react-hook-form";
 
-import { HiTrash } from "react-icons/hi";
-
-import { VStack } from "@chakra-ui/react";
-import { Text, Icon, IconButton } from "@chakra-ui/react";
+import { VStack, HStack } from "@chakra-ui/react";
+import { Text } from "@chakra-ui/react";
 import { FormLabel, FormControl } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
@@ -23,7 +21,8 @@ import {
 
 import { TextareaAutosize } from "components";
 import { Card, CardProps } from "components";
-import { useNotify } from "components";
+import { ModalTrigger } from "components";
+import { useMutationToast } from "components";
 import { useMutation } from "components";
 
 import {
@@ -33,49 +32,18 @@ import {
   UpdateMemberRoleInput,
   UpdateMemberRolePayload,
   DeleteMemberRoleInput,
+  DeleteMemberRolePayload,
 } from "schema";
-import { ModalTrigger } from "./modal";
 
 export interface MemberRoleCardProps extends Omit<CardProps, "role"> {
   role: MemberRole | undefined;
-  onDelete?: () => void;
 }
 
 export const MemberRoleCard: FC<MemberRoleCardProps> = ({
   role,
-  onDelete,
   ...otherProps
 }) => {
   const { name, description } = role ?? {};
-  const notify = useNotify();
-
-  const [deleteRole] = useMutation(
-    (mutation, args: DeleteMemberRoleInput) => {
-      const { roleId, ...otherFields } = mutation.deleteMemberRole({
-        input: args,
-      });
-      return { roleId, ...otherFields };
-    },
-    {
-      onCompleted: () => {
-        notify({
-          status: "success",
-          description: "Member role deleted",
-        });
-        if (onDelete) {
-          onDelete();
-        }
-      },
-      onError: ({ message }) => {
-        notify({
-          status: "error",
-          title: "Failed to delete member role",
-          description: message,
-        });
-      },
-    }
-  );
-
   return (
     <ModalTrigger
       renderModal={(disclosure) => (
@@ -83,21 +51,7 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
       )}
     >
       {({ open }) => (
-        <Card
-          title={name}
-          actions={["edit", "remove"]}
-          onClickEdit={open}
-          onClickRemove={() => {
-            if (role?.id) {
-              deleteRole({
-                args: {
-                  roleId: role.id,
-                },
-              });
-            }
-          }}
-          {...otherProps}
-        >
+        <Card title={name} onClickEdit={open} {...otherProps}>
           <Text color="gray.600" noOfLines={8}>
             {description}
           </Text>
@@ -111,104 +65,124 @@ export interface EditMemberRoleModalProps extends Omit<ModalProps, "children"> {
   role?: MemberRole;
   onCreate?: (payload: CreateMemberRolePayload) => void;
   onUpdate?: (payload: UpdateMemberRolePayload) => void;
+  onDelete?: (payload: DeleteMemberRolePayload) => void;
 }
 
 export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
   role,
   onCreate,
   onUpdate,
+  onDelete,
   onClose,
   ...otherProps
 }) => {
-  const notify = useNotify();
+  const { id: roleId, name, description } = role ?? {};
 
+  const createRoleCallbacks = useMutationToast({
+    subject: "member role",
+    action: "create",
+    onCompleted: (payload: CreateMemberRolePayload) => {
+      if (onCreate) {
+        onCreate(payload);
+      }
+      onClose();
+    },
+  });
   const [createRole] = useMutation(
     (mutation, args: CreateMemberRoleInput) => {
-      const { role, ...otherFields } = mutation.createMemberRole({
+      const payload = mutation.createMemberRole({
         input: args,
       });
-      return {
-        role: selectFields(role, ["id", "name", "description"]),
-        ...otherFields,
-      };
+      getFields(payload.role, "id", "name", "description");
+      return payload;
     },
-    {
-      onCompleted: (payload) => {
-        notify({
-          status: "success",
-          description: "Member role created",
-        });
-        if (onCreate) {
-          onCreate(payload);
-        }
-        onClose();
-      },
-      onError: ({ message }) => {
-        notify({
-          status: "error",
-          title: "Failed to create member role",
-          description: message,
-        });
-      },
-    }
+    { ...createRoleCallbacks }
   );
 
+  const updateRoleCallbacks = useMutationToast({
+    subject: "member role",
+    action: "update",
+    onCompleted: (payload: UpdateMemberRolePayload) => {
+      if (onUpdate) {
+        onUpdate(payload);
+      }
+      onClose();
+    },
+  });
   const [updateRole] = useMutation(
     (mutation, args: UpdateMemberRoleInput) => {
       const { role, ...otherFields } = mutation.updateMemberRole({
         input: args,
       });
       return {
-        role: selectFields(role, ["id", "name", "description"]),
+        role: getFields(role, "id", "name", "description"),
         ...otherFields,
       };
     },
-    {
-      onCompleted: (payload) => {
-        notify({
-          status: "success",
-          description: "Member role updated",
-        });
-        if (onUpdate) {
-          onUpdate(payload);
-        }
-        onClose();
-      },
-      onError: ({ message }) => {
-        notify({
-          status: "error",
-          title: "Failed to update member role",
-          description: message,
-        });
-      },
-    }
+    { ...updateRoleCallbacks }
   );
 
-  const { register, handleSubmit, reset } = useForm<{
+  const deleteRoleCallbacks = useMutationToast({
+    subject: "member role",
+    action: "delete",
+    onCompleted: (payload: DeleteMemberRolePayload) => {
+      if (onDelete) {
+        onDelete(payload);
+      }
+      close();
+    },
+  });
+  const [deleteRole] = useMutation(
+    (mutation, args: DeleteMemberRoleInput) => {
+      const { roleId, ...otherFields } = mutation.deleteMemberRole({
+        input: args,
+      });
+      return { roleId, ...otherFields };
+    },
+    { ...deleteRoleCallbacks }
+  );
+
+  const {
+    register,
+    trigger,
+    reset,
+    watch,
+    handleSubmit,
+    formState: { isValid, isValidating, isDirty },
+  } = useForm<{
     name: string;
     description: string;
-  }>();
+  }>({
+    mode: "all",
+  });
   useEffect(
-    () => reset(),
-    [role] /* eslint-disable-line react-hooks/exhaustive-deps */
+    () => {
+      if (roleId) {
+        reset();
+      }
+    },
+    [roleId] /* eslint-disable-line react-hooks/exhaustive-deps */
   );
 
-  const onSubmit = handleSubmit((values) => {
-    if (role?.id) {
-      updateRole({
-        args: {
-          roleId: role.id,
-          ...values,
-        },
-      });
+  const values = watch();
+  useEffect(
+    () => {
+      if (!isDirty && !isValid && !isValidating) {
+        trigger();
+      }
+    },
+    [values] /* eslint-disable-line react-hooks/exhaustive-deps */
+  );
+
+  const onSubmit = handleSubmit(async (values) => {
+    if (roleId) {
+      await updateRole({ args: { roleId, ...values } });
     } else {
-      createRole({
-        args: values,
-      });
+      await createRole({ args: values });
     }
+    reset();
   });
 
-  const { name, description } = role ?? {};
   return (
     <Modal onClose={onClose} {...otherProps}>
       <ModalOverlay />
@@ -221,7 +195,7 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
             <Input
               defaultValue={name}
               placeholder="President"
-              {...register("name")}
+              {...register("name", { required: true })}
             />
           </FormControl>
           <FormControl isRequired>
@@ -240,13 +214,24 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
               }
               minRows={8}
               maxRows={12}
-              {...register("description")}
+              {...register("description", { required: true })}
             />
           </FormControl>
         </ModalBody>
-        <ModalFooter>
-          <Button type="submit" colorScheme="blue">
-            {role ? "Update" : "Create"}
+        <ModalFooter as={HStack}>
+          {roleId && (
+            <Button
+              variant="outline"
+              colorScheme="red"
+              onClick={() => {
+                deleteRole({ args: { roleId } });
+              }}
+            >
+              Delete
+            </Button>
+          )}
+          <Button type="submit" colorScheme="green" isDisabled={!isValid}>
+            Save
           </Button>
         </ModalFooter>
       </ModalContent>

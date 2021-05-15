@@ -1,52 +1,32 @@
 import React, { FC, ReactNode } from "react";
-import isEmpty from "lodash/isEmpty";
-
-import { HiPencil, HiX } from "react-icons/hi";
+import { HiPencil, HiMinusCircle } from "react-icons/hi";
 
 import { BoxProps, Box, VStack, HStack } from "@chakra-ui/react";
 import { Text, Icon } from "@chakra-ui/react";
 import { IconButton, IconButtonProps } from "@chakra-ui/react";
 
-export type CardActions = "edit" | "remove";
-
 export interface CardProps extends Omit<BoxProps, "title"> {
   title?: ReactNode;
-  actions?: CardActions[];
   onClickEdit?: IconButtonProps["onClick"];
   onClickRemove?: IconButtonProps["onClick"];
 }
 
 export const Card: FC<CardProps> = ({
   title,
-  actions = [],
   onClickEdit,
   onClickRemove,
   children,
   ...otherProps
 }) => {
-  const getActionProps = (action: CardActions): IconButtonProps => {
-    switch (action) {
-      case "edit":
-        return {
-          icon: <Icon as={HiPencil} />,
-          "aria-label": "Edit",
-          colorScheme: "blue",
-          onClick: onClickEdit,
-          _hover: {
-            borderColor: "blue.400",
-          },
-        };
-      case "remove":
-        return {
-          icon: <Icon as={HiX} />,
-          "aria-label": "Remove",
-          colorScheme: "red",
-          onClick: onClickRemove,
-          _hover: {
-            borderColor: "red.400",
-          },
-        };
-    }
+  const showActions = [onClickEdit, onClickRemove].some((x) => !!x);
+  const actionButtonProps = {
+    variant: "ghost",
+    size: "xs",
+    fontSize: "lg",
+    isRound: true,
+    borderColor: "transparent",
+    borderWidth: 1,
+    transitionDuration: "150ms",
   };
   return (
     <VStack
@@ -80,21 +60,32 @@ export const Card: FC<CardProps> = ({
             title
           )}
         </Box>
-        {!isEmpty(actions) && (
+        {showActions && (
           <HStack spacing={0.5}>
-            {actions.map((action) => (
+            {onClickEdit && (
               <IconButton
-                key={action}
-                variant="ghost"
-                size="xs"
-                fontSize="lg"
-                isRound
-                borderColor="transparent"
-                borderWidth={1}
-                transitionDuration="150ms"
-                {...getActionProps(action)}
+                icon={<Icon as={HiPencil} />}
+                aria-label="Edit"
+                colorScheme="blue"
+                onClick={onClickEdit}
+                _hover={{
+                  borderColor: "blue.400",
+                }}
+                {...actionButtonProps}
               />
-            ))}
+            )}
+            {onClickRemove && (
+              <IconButton
+                icon={<Icon as={HiMinusCircle} />}
+                aria-label="Remove"
+                colorScheme="red"
+                onClick={onClickRemove}
+                _hover={{
+                  borderColor: "red.400",
+                }}
+                {...actionButtonProps}
+              />
+            )}
           </HStack>
         )}
       </HStack>
