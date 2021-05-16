@@ -10,7 +10,7 @@ export const useToast = (
 ): ReturnType<typeof _useToast> => {
   return _useToast({
     position: "bottom",
-    duration: 3000,
+    duration: 2400,
     isClosable: true,
     ...options,
   });
@@ -25,7 +25,7 @@ export interface MutationToastOptions<TData> {
   onError?: (error: GQlessError) => void;
 }
 
-export interface MutationToastCallbacks<TData> {
+export interface MutationToastCallbacks<TData = unknown> {
   onCompleted: (data: TData) => void;
   onError: (error: GQlessError) => void;
 }

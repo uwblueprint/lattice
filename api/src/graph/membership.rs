@@ -1,4 +1,5 @@
 use super::prelude::*;
+
 #[derive(Debug, Clone, From, Deref)]
 pub struct MemberRoleObject(MemberRole);
 

@@ -3,10 +3,9 @@ import isEmpty from "lodash/isEmpty";
 
 import { Container, VStack } from "@chakra-ui/react";
 import { Heading, Text } from "@chakra-ui/react";
-import { Button } from "@chakra-ui/react";
 
-import { PageLayout, Empty, ModalTrigger, MemberRoleCard } from "components";
-import { EditMemberRoleModal } from "components";
+import { PageLayout, Empty } from "components";
+import { MemberRoleCard, NewMemberRoleButton } from "components";
 import { useQuery, useRefetch } from "components";
 
 const Organization: FC = () => {
@@ -33,28 +32,25 @@ const Organization: FC = () => {
             <VStack align="stretch">
               {memberRoles.map((role, index) => {
                 const { id: roleId } = role;
-                return <MemberRoleCard key={roleId ?? index} role={role} />;
+                return (
+                  <MemberRoleCard
+                    key={roleId ?? index}
+                    role={role}
+                    onDelete={() => {
+                      refetch(memberRoles);
+                    }}
+                  />
+                );
               })}
             </VStack>
           ) : (
             <Empty>No member roles.</Empty>
           )}
-          <ModalTrigger
-            renderModal={(disclosure) => (
-              <EditMemberRoleModal
-                onCreate={() => {
-                  refetch();
-                }}
-                {...disclosure}
-              />
-            )}
-          >
-            {({ open }) => (
-              <Button colorScheme="blue" alignSelf="start" onClick={open}>
-                New Role
-              </Button>
-            )}
-          </ModalTrigger>
+          <NewMemberRoleButton
+            onCreate={() => {
+              refetch(memberRoles);
+            }}
+          />
         </VStack>
       </Container>
     </PageLayout>
