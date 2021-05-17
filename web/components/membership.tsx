@@ -3,8 +3,8 @@ import { getFields } from "gqless";
 
 import { Text } from "@chakra-ui/react";
 import { FormLabel, FormControl } from "@chakra-ui/react";
-import { Input } from "@chakra-ui/react";
 import { ButtonProps, Button } from "@chakra-ui/react";
+import { Input } from "@chakra-ui/react";
 import { ModalProps } from "@chakra-ui/react";
 
 import { TextareaAutosize } from "components";
@@ -12,15 +12,10 @@ import { Card, CardProps } from "components";
 import { ModalTrigger } from "components";
 import { EditModal, useEditModalForm, useEditModalMutations } from "components";
 
-import {
-  MemberRole,
-  CreateMemberRoleInput,
-  CreateMemberRolePayload,
-  UpdateMemberRoleInput,
-  UpdateMemberRolePayload,
-  DeleteMemberRoleInput,
-  DeleteMemberRolePayload,
-} from "schema";
+import { MemberRole } from "schema";
+import { CreateMemberRoleInput, CreateMemberRolePayload } from "schema";
+import { UpdateMemberRoleInput, UpdateMemberRolePayload } from "schema";
+import { DeleteMemberRoleInput, DeleteMemberRolePayload } from "schema";
 
 export interface EditMemberRoleModalProps extends Omit<ModalProps, "children"> {
   role?: MemberRole;
@@ -134,7 +129,7 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
 export interface MemberRoleCardProps
   extends Omit<CardProps, "role">,
     Pick<EditMemberRoleModalProps, "onUpdate" | "onDelete"> {
-  role: MemberRole | undefined;
+  role: MemberRole;
 }
 
 export const MemberRoleCard: FC<MemberRoleCardProps> = ({
@@ -143,7 +138,7 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
   onDelete,
   ...otherProps
 }) => {
-  const { name, description } = role ?? {};
+  const { name, description } = role;
   return (
     <ModalTrigger
       renderModal={(disclosure) => (

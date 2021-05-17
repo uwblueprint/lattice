@@ -90,7 +90,8 @@ impl MembershipMutations {
 
         let role_id = role_id
             .get::<MemberRole>()
-            .context("invalid member role ID")?;
+            .context("invalid member role ID")
+            .into_field_result()?;
         let role = {
             let role = MemberRole::find(&role_id)
                 .load(ctx.entity())

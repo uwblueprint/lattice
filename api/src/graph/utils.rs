@@ -8,6 +8,22 @@ pub fn with_identity<'a>(
     Ok(claims)
 }
 
+pub async fn with_viewer<'a>(ctx: &'a Context<'_>) -> FieldResult<User> {
+    let IdentityClaims { email, .. } = with_identity(ctx)?;
+    let user = User::find_by_email(email)
+        .load(ctx.entity())
+        .await
+        .context("failed to load user")
+        .into_field_result()?;
+    match user {
+        Some(user) => Ok(user),
+        None => {
+            let error = format_err!("user not registered");
+            Err(error.into())
+        }
+    }
+}
+
 pub trait ContextExt {
     fn entity(&self) -> &EntityContext;
 }

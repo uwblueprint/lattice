@@ -11,3 +11,4 @@ export * from "./chakra";
 export * from "./firebase";
 export * from "./membership";
 export * from "./authentication";
+export * from "./user";

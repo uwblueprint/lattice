@@ -21,6 +21,18 @@ pub struct User {
 
     #[builder(default)]
     pub photo_url: Option<String>,
+
+    #[builder(default)]
+    pub website_url: Option<String>,
+
+    #[builder(default)]
+    pub twitter_handle: Option<String>,
+
+    #[builder(default)]
+    pub instagram_handle: Option<String>,
+
+    #[builder(default)]
+    pub bio: Option<String>,
 }
 
 impl Object for User {

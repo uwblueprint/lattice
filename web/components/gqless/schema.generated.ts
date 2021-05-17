@@ -49,6 +49,14 @@ export interface UpdateMemberRoleInput {
   description: Scalars["String"];
 }
 
+export interface UpdateUserInput {
+  userId: Scalars["ID"];
+  websiteUrl?: Maybe<Scalars["String"]>;
+  twitterHandle?: Maybe<Scalars["String"]>;
+  instagramHandle?: Maybe<Scalars["String"]>;
+  bio?: Maybe<Scalars["String"]>;
+}
+
 export const scalarsEnumsHash: ScalarsEnumsHash = {
   Boolean: true,
   DateTime: true,
@@ -82,6 +90,10 @@ export const generatedSchema = {
     registerUser: {
       __type: "RegisterUserPayload!",
       __args: { input: "RegisterUserInput!" },
+    },
+    updateUser: {
+      __type: "UpdateUserPayload!",
+      __args: { input: "UpdateUserInput!" },
     },
   },
   subscription: {},
@@ -131,6 +143,17 @@ export const generatedSchema = {
     __typename: { __type: "String!" },
     role: { __type: "MemberRole!" },
   },
+  UpdateUserInput: {
+    userId: { __type: "ID!" },
+    websiteUrl: { __type: "String" },
+    twitterHandle: { __type: "String" },
+    instagramHandle: { __type: "String" },
+    bio: { __type: "String" },
+  },
+  UpdateUserPayload: {
+    __typename: { __type: "String!" },
+    user: { __type: "User!" },
+  },
   User: {
     __typename: { __type: "String!" },
     id: { __type: "ID!" },
@@ -142,6 +165,10 @@ export const generatedSchema = {
     email: { __type: "String!" },
     phone: { __type: "String" },
     photoUrl: { __type: "String" },
+    websiteUrl: { __type: "String" },
+    twitterHandle: { __type: "String" },
+    instagramHandle: { __type: "String" },
+    bio: { __type: "String" },
   },
 } as const;
 
@@ -165,6 +192,7 @@ export interface Mutation {
     input: DeleteMemberRoleInput;
   }) => DeleteMemberRolePayload;
   registerUser: (args: { input: RegisterUserInput }) => RegisterUserPayload;
+  updateUser: (args: { input: UpdateUserInput }) => UpdateUserPayload;
 }
 
 export interface Subscription {
@@ -207,6 +235,11 @@ export interface UpdateMemberRolePayload {
   role: MemberRole;
 }
 
+export interface UpdateUserPayload {
+  __typename: "UpdateUserPayload" | undefined;
+  user: User;
+}
+
 export interface User {
   __typename: "User" | undefined;
   id: ScalarsEnums["ID"];
@@ -218,6 +251,10 @@ export interface User {
   email: ScalarsEnums["String"];
   phone?: Maybe<ScalarsEnums["String"]>;
   photoUrl?: Maybe<ScalarsEnums["String"]>;
+  websiteUrl?: Maybe<ScalarsEnums["String"]>;
+  twitterHandle?: Maybe<ScalarsEnums["String"]>;
+  instagramHandle?: Maybe<ScalarsEnums["String"]>;
+  bio?: Maybe<ScalarsEnums["String"]>;
 }
 
 export interface SchemaObjectTypes {
@@ -230,6 +267,7 @@ export interface SchemaObjectTypes {
   MemberRole: MemberRole;
   RegisterUserPayload: RegisterUserPayload;
   UpdateMemberRolePayload: UpdateMemberRolePayload;
+  UpdateUserPayload: UpdateUserPayload;
   User: User;
 }
 export type SchemaObjectTypesNames =
@@ -242,6 +280,7 @@ export type SchemaObjectTypesNames =
   | "MemberRole"
   | "RegisterUserPayload"
   | "UpdateMemberRolePayload"
+  | "UpdateUserPayload"
   | "User";
 
 export interface GeneratedSchema {
@@ -254,4 +293,4 @@ export type MakeNullable<T> = {
   [K in keyof T]: T[K] | undefined;
 };
 
-export type ScalarsEnums = MakeNullable<Scalars>
+export interface ScalarsEnums extends MakeNullable<Scalars> {}

@@ -1,6 +1,6 @@
 import React, { FC } from "react";
-import { useRouter } from "next/router";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 
 import { HiLogin, HiLogout } from "react-icons/hi";
 import { HiUser } from "react-icons/hi";
@@ -107,7 +107,7 @@ const PageHeaderNavigation: FC<PageHeaderNavigationProps> = ({
 }) => {
   return (
     <HStack align="stretch" spacing={1} color="white" {...otherProps}>
-      <PageHeaderNavigationItem path="/">Home</PageHeaderNavigationItem>
+      <PageHeaderNavigationItem path="/">Profile</PageHeaderNavigationItem>
       <PageHeaderNavigationItem path="/directory">
         Directory
       </PageHeaderNavigationItem>
@@ -144,7 +144,6 @@ const PageHeaderNavigationItem: FC<PageHeaderNavigationItemProps> = ({
         </Text>
       </Button>
     </NextLink>
-    // </Box>
   );
 };
 

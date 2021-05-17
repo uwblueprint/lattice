@@ -58,11 +58,11 @@ export interface EditModalProps
   subject: string;
   mode: "create" | "update";
   formState: FormState<FieldValues>;
-  isCreating: boolean;
-  isUpdating: boolean;
-  isDeleting: boolean;
+  isCreating?: boolean;
+  isUpdating?: boolean;
+  isDeleting?: boolean;
   onSubmit: HTMLProps<HTMLFormElement>["onSubmit"];
-  onDelete: HTMLProps<HTMLButtonElement>["onClick"];
+  onDelete?: HTMLProps<HTMLButtonElement>["onClick"];
 }
 
 export const EditModal: FC<EditModalProps> = ({
@@ -98,7 +98,7 @@ export const EditModal: FC<EditModalProps> = ({
           {children}
         </ModalBody>
         <ModalFooter as={HStack}>
-          {mode === "update" && (
+          {mode === "update" && !!onDelete && (
             <Button
               variant="outline"
               colorScheme="red"

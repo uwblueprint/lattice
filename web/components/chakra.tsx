@@ -57,6 +57,27 @@ export const ChakraTheme: Theme = extendTheme({
       },
     },
   },
+  components: {
+    Form: {
+      baseStyle: {
+        helperText: {
+          mt: 1,
+        },
+      },
+    },
+    FormLabel: {
+      baseStyle: {
+        mb: 1,
+      },
+    },
+    FormError: {
+      baseStyle: {
+        text: {
+          mt: 1,
+        },
+      },
+    },
+  },
 });
 
 export const ChakraProvider: FC = ({ children }) => (

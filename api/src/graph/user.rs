@@ -41,6 +41,22 @@ impl UserObject {
     async fn photo_url(&self) -> Option<&String> {
         self.photo_url.as_ref()
     }
+
+    async fn website_url(&self) -> Option<&String> {
+        self.website_url.as_ref()
+    }
+
+    async fn twitter_handle(&self) -> Option<&String> {
+        self.twitter_handle.as_ref()
+    }
+
+    async fn instagram_handle(&self) -> Option<&String> {
+        self.instagram_handle.as_ref()
+    }
+
+    async fn bio(&self) -> Option<&String> {
+        self.bio.as_ref()
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -100,18 +116,18 @@ impl UserMutations {
         ctx: &Context<'_>,
         input: RegisterUserInput,
     ) -> FieldResult<RegisterUserPayload> {
-        let IdentityClaims { email, .. } = with_identity(ctx)?;
-        if !email.ends_with("@uwblueprint.org") {
-            let error = format_err!("invalid email domain");
-            return Err(error).into_field_result();
-        }
-
         let RegisterUserInput {
             first_name,
             last_name,
             phone,
             photo_url,
         } = input;
+
+        let IdentityClaims { email, .. } = with_identity(ctx)?;
+        if !email.ends_with("@uwblueprint.org") {
+            let error = format_err!("invalid email domain");
+            return Err(error).into_field_result();
+        }
 
         let existing_user = User::find_by_email(email)
             .load(ctx.entity())
@@ -137,6 +153,7 @@ impl UserMutations {
                 .photo_url(photo_url)
                 .build(),
         };
+
         user.save(ctx.entity())
             .await
             .context("failed to save user")
@@ -144,6 +161,48 @@ impl UserMutations {
 
         let user = UserObject::from(user);
         let payload = RegisterUserPayload { user, is_new_user };
+        Ok(payload)
+    }
+
+    async fn update_user(
+        &self,
+        ctx: &Context<'_>,
+        input: UpdateUserInput,
+    ) -> FieldResult<UpdateUserPayload> {
+        let UpdateUserInput {
+            user_id,
+            bio,
+            website_url,
+            twitter_handle,
+            instagram_handle,
+        } = input;
+        let viewer = with_viewer(ctx).await?;
+
+        let user_id = user_id
+            .get::<User>()
+            .context("invalid user ID")
+            .into_field_result()?;
+        let user = {
+            if viewer.id != user_id {
+                let error = format_err!("not authorized");
+                return Err(error.into());
+            }
+            User {
+                website_url,
+                twitter_handle,
+                instagram_handle,
+                bio,
+                ..viewer
+            }
+        };
+
+        user.save(ctx.entity())
+            .await
+            .context("failed to save user")
+            .into_field_result()?;
+
+        let user = UserObject::from(user);
+        let payload = UpdateUserPayload { user };
         Ok(payload)
     }
 }
@@ -160,4 +219,18 @@ struct RegisterUserInput {
 struct RegisterUserPayload {
     user: UserObject,
     is_new_user: bool,
+}
+
+#[derive(Debug, Clone, InputObject)]
+struct UpdateUserInput {
+    user_id: NodeId,
+    website_url: Option<String>,
+    twitter_handle: Option<String>,
+    instagram_handle: Option<String>,
+    bio: Option<String>,
+}
+
+#[derive(Debug, Clone, SimpleObject)]
+struct UpdateUserPayload {
+    user: UserObject,
 }
