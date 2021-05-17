@@ -35,35 +35,17 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
     - [Rust](https://www.rust-lang.org/tools/install)
     - [Node via Volta](https://docs.volta.sh/guide/getting-started)
 
-1.  Clone the repo:
+2.  Clone the repo:
 
     ```bash
     git clone git@github.com:uwblueprint/lattice && \
     cd ./lattice/
     ```
 
-1.  Start services:
+3.  Install dependencies:
 
     ```bash
-    docker-compose up -d
-    ```
-
-1.  Open workspace:
-
-    ```bash
-    code ./lattice.code-workspace
-    ```
-
-1.  Install dependencies:
-
-    ```bash
-    # For api:
-    cd ./api/ && \
-    cargo check
-
-    # For web:
-    cd ./web/ && \
-    yarn install
+    ./setup.sh
     ```
 
 ### Setup 2: [Devcontainers](https://code.visualstudio.com/docs/remote/containers)
@@ -108,3 +90,43 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
 
 > To develop multiple services at once, open a window for each service and
 > start the corresponding devcontainer.
+
+### Workflow
+
+1.  Start background services:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+2.  Open workspace in [VS Code](https://code.visualstudio.com):
+
+    ```bash
+    code ./lattice.code-workspace
+    ```
+
+3.  Start `api` (in terminal 1):
+
+    ```bash
+    cd ./api/ && cargo run
+    ```
+
+    Visit [`localhost:3000`](http://localhost:3000) to make sure the GraphQL
+    Playground is up and running.
+
+4.  Start `web` (in terminal 2):
+
+    ```bash
+    cd ./web/ && yarn dev
+    ```
+
+    Visit [`localhost:8000`](http://localhost:8000) to make sure the web app
+    is up and running.
+
+<br />
+
+When you're finished, quit both terminals and stop background services with:
+
+```bash
+docker-compose down
+```
