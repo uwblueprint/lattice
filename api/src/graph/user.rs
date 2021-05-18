@@ -57,6 +57,27 @@ impl UserObject {
     async fn bio(&self) -> Option<&String> {
         self.bio.as_ref()
     }
+
+    async fn memberships(
+        &self,
+        ctx: &Context<'_>,
+    ) -> FieldResult<Vec<MembershipObject>> {
+        let memberships = self
+            .0
+            .memberships()
+            .find(ctx.entity())
+            .await
+            .context("failed to find memberships")?;
+        let memberships: Vec<_> = memberships
+            .try_collect()
+            .await
+            .context("failed to load memberships")?;
+        let memberships: Vec<_> = memberships
+            .into_iter()
+            .map(MembershipObject::from)
+            .collect();
+        Ok(memberships)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -78,8 +99,7 @@ impl UserQueries {
         let user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")
-            .into_field_result()?;
+            .context("failed to load user")?;
         let user = user.map(UserObject::from);
         Ok(user)
     }
@@ -92,15 +112,11 @@ impl UserQueries {
     ) -> FieldResult<Vec<UserObject>> {
         let conditions = UserConditions::builder().query(query).build();
         let users = User::filter(conditions)
-            .load(ctx.entity())
+            .find(ctx.entity())
             .await
-            .context("failed to load users")
-            .into_field_result()?;
-        let users: Vec<_> = users
-            .try_collect()
-            .await
-            .context("failed to load users")
-            .into_field_result()?;
+            .context("failed to find users")?;
+        let users: Vec<_> =
+            users.try_collect().await.context("failed to load users")?;
         let users: Vec<_> = users.into_iter().map(UserObject::from).collect();
         Ok(users)
     }
@@ -116,6 +132,12 @@ impl UserMutations {
         ctx: &Context<'_>,
         input: RegisterUserInput,
     ) -> FieldResult<RegisterUserPayload> {
+        let IdentityClaims { email, .. } = with_identity(ctx)?;
+        if !email.ends_with("@uwblueprint.org") {
+            let error = format_err!("invalid email domain");
+            return Err(error.into());
+        }
+
         let RegisterUserInput {
             first_name,
             last_name,
@@ -123,20 +145,13 @@ impl UserMutations {
             photo_url,
         } = input;
 
-        let IdentityClaims { email, .. } = with_identity(ctx)?;
-        if !email.ends_with("@uwblueprint.org") {
-            let error = format_err!("invalid email domain");
-            return Err(error).into_field_result();
-        }
-
         let existing_user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")
-            .into_field_result()?;
+            .context("failed to load user")?;
         let is_new_user = existing_user.is_none();
 
-        let user = match existing_user {
+        let mut user = match existing_user {
             Some(user) => User {
                 first_name,
                 last_name,
@@ -153,11 +168,9 @@ impl UserMutations {
                 .photo_url(photo_url)
                 .build(),
         };
-
         user.save(ctx.entity())
             .await
-            .context("failed to save user")
-            .into_field_result()?;
+            .context("failed to save user")?;
 
         let user = UserObject::from(user);
         let payload = RegisterUserPayload { user, is_new_user };
@@ -176,30 +189,24 @@ impl UserMutations {
             twitter_handle,
             instagram_handle,
         } = input;
+        let user_id = user_id.get::<User>().ensure("invalid user ID")?;
+
         let viewer = with_viewer(ctx).await?;
+        if viewer.id != user_id {
+            let error = format_err!("not authorized");
+            return Err(error.into());
+        }
 
-        let user_id = user_id
-            .get::<User>()
-            .context("invalid user ID")
-            .into_field_result()?;
-        let user = {
-            if viewer.id != user_id {
-                let error = format_err!("not authorized");
-                return Err(error.into());
-            }
-            User {
-                website_url,
-                twitter_handle,
-                instagram_handle,
-                bio,
-                ..viewer
-            }
+        let mut user = User {
+            website_url,
+            twitter_handle,
+            instagram_handle,
+            bio,
+            ..viewer
         };
-
         user.save(ctx.entity())
             .await
-            .context("failed to save user")
-            .into_field_result()?;
+            .context("failed to save user")?;
 
         let user = UserObject::from(user);
         let payload = UpdateUserPayload { user };

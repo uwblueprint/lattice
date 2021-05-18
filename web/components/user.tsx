@@ -26,10 +26,10 @@ import { TextareaAutosize } from "components";
 import { ModalTrigger } from "components";
 import { EditModal, useEditModalForm } from "components";
 import { useMutation, useMutationToast } from "components";
+import { useTransparentize } from "components";
 
 import { User } from "schema";
 import { UpdateUserPayload, UpdateUserInput } from "schema";
-import { useTransparentize } from "./chakra";
 
 export interface EditUserModalProps extends Omit<ModalProps, "children"> {
   user: User;
@@ -178,7 +178,14 @@ export const UserCard: FC<UserCardProps> = ({
 
   const websiteDomain = useMemo(
     () => {
-      return websiteUrl ? new URL(websiteUrl).host : null;
+      if (!websiteUrl) {
+        return null;
+      }
+      try {
+        return new URL(websiteUrl).host;
+      } catch (error) {
+        return websiteUrl;
+      }
     },
     [user] // eslint-disable-line react-hooks/exhaustive-deps
   );

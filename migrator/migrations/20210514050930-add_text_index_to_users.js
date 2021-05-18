@@ -6,6 +6,7 @@ module.exports = {
       { name: "text" }
     );
   },
+
   async down(db, client) {
     const users = db.collection("users");
     return users.dropIndex("text");

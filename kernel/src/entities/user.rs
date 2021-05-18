@@ -52,6 +52,13 @@ impl User {
         let email: String = email.into();
         Self::find_by(doc! { "email": email })
     }
+
+    pub fn memberships(&self) -> FindQuery<Membership> {
+        let user_id = self.id.clone();
+        let conditions =
+            MembershipConditions::builder().user_id(user_id).build();
+        Membership::filter(conditions)
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Builder)]

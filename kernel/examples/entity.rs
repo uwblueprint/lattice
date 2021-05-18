@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     };
 
     let user1 = {
-        let user = User::builder()
+        let mut user = User::builder()
             .email("steven.xie@uwblueprint.org")
             .first_name("Steven")
             .last_name("Xie")

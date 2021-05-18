@@ -1,4 +1,5 @@
 import React, { FC } from "react";
+import NoSSR from "react-no-ssr";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 
@@ -82,18 +83,20 @@ export const PageHeader: FC<PageHeaderProps> = ({ ...otherProps }) => {
           </Skeleton>
         </MenuButton>
         <MenuList>
-          <MenuItem
-            icon={
-              <Icon
-                as={viewer ? HiLogout : HiLogin}
-                fontSize="lg"
-                color="blue.600"
-              />
-            }
-            onClick={viewer ? signOut : signIn}
-          >
-            Sign {viewer ? "Out" : "In"}
-          </MenuItem>
+          <NoSSR>
+            <MenuItem
+              icon={
+                <Icon
+                  as={viewer ? HiLogout : HiLogin}
+                  fontSize="lg"
+                  color="blue.600"
+                />
+              }
+              onClick={viewer ? signOut : signIn}
+            >
+              Sign {viewer ? "Out" : "In"}
+            </MenuItem>
+          </NoSSR>
         </MenuList>
       </Menu>
     </HStack>

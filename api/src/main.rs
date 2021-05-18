@@ -149,8 +149,8 @@ async fn main() -> Result<()> {
             let (error, status_code) = if rejection.is_not_found() {
                 let error = ServerError::new("not found");
                 (error, StatusCode::NOT_FOUND)
-            } else if let Some(BadGraphQLRequest(err)) = rejection.find() {
-                let error = ServerError::new(err.to_string());
+            } else if let Some(BadGraphQLRequest(error)) = rejection.find() {
+                let error = ServerError::new(error.to_string());
                 (error, StatusCode::BAD_REQUEST)
             } else if let Some(error) = rejection.find::<Error>() {
                 let error = ServerError::new(format!("{:#}", error));
