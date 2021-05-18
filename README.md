@@ -105,7 +105,13 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
     code ./lattice.code-workspace
     ```
 
-3.  Start `api` (in terminal 1):
+3.  Run database migrations:
+
+    ```bash
+    cd ./migrator && yarn up
+    ```
+
+4.  Start `api` (in terminal 1):
 
     ```bash
     cd ./api/ && cargo run
@@ -114,7 +120,7 @@ Try it out at: [`lattice.uwblueprint.org`](https://lattice.uwblueprint.org)
     Visit [`localhost:3000`](http://localhost:3000) to make sure the GraphQL
     Playground is up and running.
 
-4.  Start `web` (in terminal 2):
+5.  Start `web` (in terminal 2):
 
     ```bash
     cd ./web/ && yarn dev
