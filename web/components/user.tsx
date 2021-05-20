@@ -1,5 +1,5 @@
 import React, { FC, useMemo } from "react";
-import { getFields } from "gqless";
+import { prepass } from "gqless";
 
 import type { IconType } from "react-icons";
 import { HiLink } from "react-icons/hi";
@@ -58,7 +58,7 @@ export const EditUserModal: FC<EditUserModalProps> = ({
   const [update, { isLoading: isUpdating }] = useMutation(
     (mutation, args: UpdateUserInput) => {
       const payload = mutation.updateUser({ input: args });
-      getFields(
+      prepass(
         payload.user,
         "id",
         "websiteUrl",

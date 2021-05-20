@@ -1,6 +1,7 @@
 mod prelude;
 
 mod build;
+mod date;
 mod membership;
 mod meta;
 mod user;
@@ -12,10 +13,6 @@ pub use user::*;
 
 use prelude::*;
 
-use ::bson::de::Result as BsonDeResult;
-use ::bson::ser::Result as BsonSerResult;
-
-use mongodb::error::Error as MongoError;
 use mongodb::options::{FindOneOptions, FindOptions, ReplaceOptions};
 
 pub struct Context {
@@ -35,21 +32,68 @@ pub trait Object:
 
     fn object_id(&self) -> ObjectId;
 
+    fn object_ref(&self) -> ObjectRef {
+        let id = self.object_id();
+        ObjectRef::new(id)
+    }
+
     fn global_id(&self) -> GlobalId {
         GlobalId::of(self)
     }
 
-    fn to_document(&self) -> BsonSerResult<Document> {
+    fn to_document(&self) -> Result<Document> {
         let mut doc = to_document(self)?;
+
+        // Normalize ID field.
         let id = doc.remove("id").expect("missing `id` field");
         doc.insert("_id", id);
+
+        // Normalize created-at timestamp.
+        if let Some(created_at) = doc.get("created_at") {
+            if let Bson::String(created_at) = created_at {
+                let created_at: DateTime = created_at
+                    .parse()
+                    .context("failed to parse created-at timestamp")?;
+                doc.insert("created_at", Bson::DateTime(created_at));
+            }
+        };
+
+        // Normalize updated-at timestamp.
+        if let Some(updated_at) = doc.get("updated_at") {
+            if let Bson::String(updated_at) = updated_at {
+                let updated_at: DateTime = updated_at
+                    .parse()
+                    .context("failed to parse updated-at timestamp")?;
+                doc.insert("updated_at", Bson::DateTime(updated_at));
+            }
+        };
+
         Ok(doc)
     }
 
-    fn from_document(mut doc: Document) -> BsonDeResult<Self> {
+    fn from_document(mut doc: Document) -> Result<Self> {
+        // Normalize ID field.
         let id = doc.remove("_id").expect("missing `_id` field");
         doc.insert("id", id);
-        from_document(doc)
+
+        // Normalize created-at timestamp.
+        if let Some(created_at) = doc.get("created_at") {
+            if let Bson::DateTime(created_at) = created_at {
+                let created_at = created_at.to_string();
+                doc.insert("created_at", Bson::String(created_at));
+            }
+        };
+
+        // Normalize updated-at timestamp.
+        if let Some(updated_at) = doc.get("updated_at") {
+            if let Bson::DateTime(updated_at) = updated_at {
+                let updated_at = updated_at.to_string();
+                doc.insert("updated_at", Bson::String(updated_at));
+            }
+        };
+
+        let object = from_document(doc)?;
+        Ok(object)
     }
 }
 
@@ -117,8 +161,6 @@ pub trait Entity: Object {
     }
 }
 
-pub type QueryResult<T> = Result<T, MongoError>;
-
 #[derive(Debug, Clone)]
 pub struct FindOneQuery<T: Entity> {
     conditions: Document,
@@ -136,7 +178,7 @@ impl<T: Entity> FindOneQuery<T> {
         }
     }
 
-    pub async fn load(self, ctx: &Context) -> QueryResult<Option<T>> {
+    pub async fn load(self, ctx: &Context) -> Result<Option<T>> {
         let Self {
             conditions,
             options,
@@ -152,7 +194,7 @@ impl<T: Entity> FindOneQuery<T> {
         Ok(Some(entity))
     }
 
-    pub async fn exists(self, ctx: &Context) -> QueryResult<bool> {
+    pub async fn exists(self, ctx: &Context) -> Result<bool> {
         let Self { conditions, .. } = self;
         let collection = T::collection(ctx);
         let count = collection.count_documents(conditions, None).await?;
@@ -181,22 +223,44 @@ impl<T: Entity> FindQuery<T> {
         }
     }
 
-    // pub fn and(conditions: impl Into<Document>)
-
-    pub async fn skip(&mut self, n: impl Into<Option<u32>>) -> &Self {
-        self.options.skip = n.into().map(Into::into);
+    pub fn skip(mut self, n: impl Into<Option<u32>>) -> Self {
+        let n: Option<u32> = n.into();
+        self.options.skip = n.map(Into::into);
         self
     }
 
-    pub async fn take(&mut self, n: impl Into<Option<u32>>) -> &Self {
-        self.options.limit = n.into().map(Into::into);
+    pub fn take(mut self, n: impl Into<Option<u32>>) -> Self {
+        let n: Option<u32> = n.into();
+        self.options.limit = n.map(Into::into);
+        self
+    }
+
+    pub fn sort<D, S>(mut self, sorting: S) -> Self
+    where
+        D: Into<Document>,
+        S: Into<Option<D>>,
+    {
+        let existing = self.options.sort.take();
+        let incoming: Option<D> = sorting.into();
+        self.options.sort = incoming.map(|incoming| {
+            let incoming: Document = incoming.into();
+            match existing {
+                Some(mut existing) => {
+                    for (key, value) in incoming {
+                        existing.insert(key, value);
+                    }
+                    existing
+                }
+                None => incoming,
+            }
+        });
         self
     }
 
     pub async fn find(
         self,
         ctx: &Context,
-    ) -> QueryResult<impl Stream<Item = QueryResult<T>>> {
+    ) -> Result<impl Stream<Item = Result<T>>> {
         let Self {
             conditions,
             options,
@@ -204,10 +268,10 @@ impl<T: Entity> FindQuery<T> {
         } = self;
         let collection = T::collection(ctx);
         let cursor = collection.find(conditions, options).await?;
-        let stream = cursor.map(|doc| -> QueryResult<T> {
+        let stream = cursor.map(|doc| -> Result<T> {
             let doc = match doc {
                 Ok(doc) => doc,
-                Err(error) => return Err(error),
+                Err(error) => return Err(error.into()),
             };
             let entity = T::from_document(doc)?;
             Ok(entity)
@@ -215,9 +279,43 @@ impl<T: Entity> FindQuery<T> {
         Ok(stream)
     }
 
-    pub async fn count(self, ctx: &Context) -> QueryResult<i64> {
+    pub async fn count(self, ctx: &Context) -> Result<i64> {
         let Self { conditions, .. } = self;
         let collection = T::collection(ctx);
-        collection.count_documents(conditions, None).await
+        let count = collection.count_documents(conditions, None).await?;
+        Ok(count)
+    }
+}
+
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SortingOrder {
+    Asc,
+    Desc,
+}
+
+impl Default for SortingOrder {
+    fn default() -> Self {
+        Self::Asc
+    }
+}
+
+impl From<SortingOrder> for Bson {
+    fn from(order: SortingOrder) -> Self {
+        use SortingOrder::*;
+        match order {
+            Asc => Bson::Int32(1),
+            Desc => Bson::Int32(-1),
+        }
+    }
+}
+
+impl From<Bson> for SortingOrder {
+    fn from(bson: Bson) -> Self {
+        use SortingOrder::*;
+        match bson {
+            Bson::Int32(1) => Asc,
+            Bson::Int32(-1) => Desc,
+            other => panic!("invalid sorting order: {}", other),
+        }
     }
 }

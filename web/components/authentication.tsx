@@ -1,4 +1,4 @@
-import { getFields } from "gqless";
+import { prepass } from "gqless";
 import { RegisterUserInput } from "schema";
 
 import { useFirebaseSignIn, useFirebaseAuth } from "components";
@@ -15,8 +15,8 @@ export const useSignIn = (): (() => void) => {
       const payload = mutation.registerUser({
         input: args,
       });
-      getFields(payload);
-      getFields(
+      prepass(payload, "isNewUser");
+      prepass(
         payload.user,
         "id",
         "firstName",

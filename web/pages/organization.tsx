@@ -6,12 +6,10 @@ import { Heading, Text } from "@chakra-ui/react";
 
 import { PageLayout, Empty } from "components";
 import { MemberRoleCard, NewMemberRoleButton } from "components";
-import { useQuery, useRefetch } from "components";
+import { useQuery } from "components";
 
 const Organization: FC = () => {
   const { memberRoles } = useQuery();
-  const refetch = useRefetch();
-
   return (
     <PageLayout>
       <Container as={VStack} align="stretch" spacing={6} py={8}>
@@ -36,21 +34,15 @@ const Organization: FC = () => {
                   <MemberRoleCard
                     key={roleId ?? index}
                     role={role}
-                    onDelete={() => {
-                      refetch(memberRoles);
-                    }}
+                    onDeleteRefetch={[memberRoles]}
                   />
                 );
               })}
             </VStack>
           ) : (
-            <Empty>No member roles.</Empty>
+            <Empty>No roles to show.</Empty>
           )}
-          <NewMemberRoleButton
-            onCreate={() => {
-              refetch(memberRoles);
-            }}
-          />
+          <NewMemberRoleButton onCreateRefetch={[memberRoles]} />
         </VStack>
       </Container>
     </PageLayout>

@@ -65,7 +65,7 @@ const Directory: FC = () => {
             </Tbody>
           </Table>
         ) : (
-          <Empty>No {filter ? "matching" : "registered"} users</Empty>
+          <Empty>No users to show.</Empty>
         )}
       </Container>
     </PageLayout>

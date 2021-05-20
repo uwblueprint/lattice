@@ -134,18 +134,20 @@ const PageHeaderNavigationItem: FC<PageHeaderNavigationItemProps> = ({
   const isActive = pathname === href;
   return (
     <NextLink href={href} passHref>
-      <Button
-        size="sm"
-        colorScheme="blue"
-        rounded="lg"
-        bg={isActive ? "blue.700" : undefined}
-        _hover={{ bg: "blue.700" }}
-        {...otherProps}
-      >
-        <Text fontSize="md" fontWeight="medium">
-          {children}
-        </Text>
-      </Button>
+      <Link>
+        <Button
+          size="sm"
+          colorScheme="blue"
+          rounded="lg"
+          bg={isActive ? "blue.700" : undefined}
+          _hover={{ bg: "blue.700" }}
+          {...otherProps}
+        >
+          <Text fontSize="md" fontWeight="medium">
+            {children}
+          </Text>
+        </Button>
+      </Link>
     </NextLink>
   );
 };

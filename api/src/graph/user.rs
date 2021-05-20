@@ -10,12 +10,14 @@ impl UserObject {
         self.global_id().into()
     }
 
-    async fn created_at(&self) -> &DateTime {
-        &self.created_at
+    async fn created_at(&self) -> DateTimeScalar {
+        let date_time = self.created_at.clone();
+        date_time.into()
     }
 
-    async fn updated_at(&self) -> &DateTime {
-        &self.updated_at
+    async fn updated_at(&self) -> DateTimeScalar {
+        let date_time = self.updated_at.clone();
+        date_time.into()
     }
 
     async fn first_name(&self) -> &String {
@@ -65,13 +67,15 @@ impl UserObject {
         let memberships = self
             .0
             .memberships()
+            .sort(MembershipSorting::Start(SortingOrder::Desc))
+            .sort(MembershipSorting::End(SortingOrder::Desc))
             .find(ctx.entity())
             .await
-            .context("failed to find memberships")?;
+            .extend("failed to find memberships")?;
         let memberships: Vec<_> = memberships
             .try_collect()
             .await
-            .context("failed to load memberships")?;
+            .extend("failed to load memberships")?;
         let memberships: Vec<_> = memberships
             .into_iter()
             .map(MembershipObject::from)
@@ -99,7 +103,7 @@ impl UserQueries {
         let user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")?;
+            .extend("failed to load user")?;
         let user = user.map(UserObject::from);
         Ok(user)
     }
@@ -114,9 +118,9 @@ impl UserQueries {
         let users = User::filter(conditions)
             .find(ctx.entity())
             .await
-            .context("failed to find users")?;
+            .extend("failed to find users")?;
         let users: Vec<_> =
-            users.try_collect().await.context("failed to load users")?;
+            users.try_collect().await.extend("failed to load users")?;
         let users: Vec<_> = users.into_iter().map(UserObject::from).collect();
         Ok(users)
     }
@@ -148,7 +152,7 @@ impl UserMutations {
         let existing_user = User::find_by_email(email)
             .load(ctx.entity())
             .await
-            .context("failed to load user")?;
+            .extend("failed to load user")?;
         let is_new_user = existing_user.is_none();
 
         let mut user = match existing_user {
@@ -170,7 +174,7 @@ impl UserMutations {
         };
         user.save(ctx.entity())
             .await
-            .context("failed to save user")?;
+            .extend("failed to save user")?;
 
         let user = UserObject::from(user);
         let payload = RegisterUserPayload { user, is_new_user };
@@ -206,7 +210,7 @@ impl UserMutations {
         };
         user.save(ctx.entity())
             .await
-            .context("failed to save user")?;
+            .extend("failed to save user")?;
 
         let user = UserObject::from(user);
         let payload = UpdateUserPayload { user };

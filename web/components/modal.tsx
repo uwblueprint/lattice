@@ -142,8 +142,11 @@ export interface EditModalMutationsOptions<
   updateMutation: MutationFn<TUpdateData, TUpdateArgs>;
   deleteMutation: MutationFn<TDeleteData, TDeleteArgs>;
   onCreate: MutationHandler<TCreateData> | undefined;
+  onCreateRefetch?: unknown[];
   onUpdate: MutationHandler<TUpdateData> | undefined;
+  onUpdateRefetch?: unknown[];
   onDelete: MutationHandler<TDeleteData> | undefined;
+  onDeleteRefetch?: unknown[];
   onClose: () => void;
 }
 
@@ -193,8 +196,11 @@ export const useEditModalMutations = <
   updateMutation,
   deleteMutation,
   onCreate,
+  onCreateRefetch,
   onUpdate,
+  onUpdateRefetch,
   onDelete,
+  onDeleteRefetch,
   onClose,
 }: EditModalMutationsOptions<
   TCreateData,
@@ -221,10 +227,10 @@ export const useEditModalMutations = <
       onClose();
     },
   });
-  const [create, { isLoading: isCreating }] = useMutation(
-    createMutation,
-    createOptions
-  );
+  const [create, { isLoading: isCreating }] = useMutation(createMutation, {
+    ...createOptions,
+    refetchQueries: onCreateRefetch,
+  });
 
   const updateOptions = useMutationToast<TUpdateData>({
     subject,
@@ -236,10 +242,10 @@ export const useEditModalMutations = <
       onClose();
     },
   });
-  const [update, { isLoading: isUpdating }] = useMutation(
-    updateMutation,
-    updateOptions
-  );
+  const [update, { isLoading: isUpdating }] = useMutation(updateMutation, {
+    ...updateOptions,
+    refetchQueries: onUpdateRefetch,
+  });
 
   const deleteOptions = useMutationToast<TDeleteData>({
     subject,
@@ -251,10 +257,10 @@ export const useEditModalMutations = <
       onClose();
     },
   });
-  const [_delete, { isLoading: isDeleting }] = useMutation(
-    deleteMutation,
-    deleteOptions
-  );
+  const [_delete, { isLoading: isDeleting }] = useMutation(deleteMutation, {
+    ...deleteOptions,
+    refetchQueries: onDeleteRefetch,
+  });
 
   return {
     create,

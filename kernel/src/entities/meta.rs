@@ -107,3 +107,25 @@ impl<'de> Deserialize<'de> for GlobalId {
         s.parse().map_err(DeserializeError::custom)
     }
 }
+
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Hash,
+    From,
+    Into,
+    PartialEq,
+    Eq,
+    Serialize,
+    Deserialize,
+)]
+pub struct ObjectRef {
+    pub id: ObjectId,
+}
+
+impl ObjectRef {
+    pub fn new(id: ObjectId) -> Self {
+        Self { id }
+    }
+}

@@ -112,3 +112,13 @@ export const useViewerQuery: UseQuery<GeneratedSchema> = (options) => {
   );
   return query;
 };
+
+if (process.env.NODE_ENV === "development") {
+  import("@gqless/logger").then(({ createLogger }) => {
+    const logger = createLogger(GQlessClient, {
+      showCache: true,
+      showSelections: true,
+    });
+    logger.start();
+  });
+}

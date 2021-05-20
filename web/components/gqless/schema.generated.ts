@@ -32,8 +32,19 @@ export interface CreateMemberRoleInput {
   description: Scalars["String"];
 }
 
+export interface CreateMembershipInput {
+  userId: Scalars["ID"];
+  roleId: Scalars["ID"];
+  start: Scalars["DateTime"];
+  end: Scalars["DateTime"];
+}
+
 export interface DeleteMemberRoleInput {
   roleId: Scalars["ID"];
+}
+
+export interface DeleteMembershipInput {
+  membershipId: Scalars["ID"];
 }
 
 export interface RegisterUserInput {
@@ -47,6 +58,13 @@ export interface UpdateMemberRoleInput {
   roleId: Scalars["ID"];
   name: Scalars["String"];
   description: Scalars["String"];
+}
+
+export interface UpdateMembershipInput {
+  membershipId: Scalars["ID"];
+  roleId: Scalars["ID"];
+  start: Scalars["DateTime"];
+  end: Scalars["DateTime"];
 }
 
 export interface UpdateUserInput {
@@ -87,6 +105,18 @@ export const generatedSchema = {
       __type: "DeleteMemberRolePayload!",
       __args: { input: "DeleteMemberRoleInput!" },
     },
+    createMembership: {
+      __type: "CreateMembershipPayload!",
+      __args: { input: "CreateMembershipInput!" },
+    },
+    updateMembership: {
+      __type: "UpdateMembershipPayload!",
+      __args: { input: "UpdateMembershipInput!" },
+    },
+    deleteMembership: {
+      __type: "DeleteMembershipPayload!",
+      __args: { input: "DeleteMembershipInput!" },
+    },
     registerUser: {
       __type: "RegisterUserPayload!",
       __args: { input: "RegisterUserInput!" },
@@ -110,10 +140,25 @@ export const generatedSchema = {
     __typename: { __type: "String!" },
     role: { __type: "MemberRole!" },
   },
+  CreateMembershipInput: {
+    userId: { __type: "ID!" },
+    roleId: { __type: "ID!" },
+    start: { __type: "DateTime!" },
+    end: { __type: "DateTime!" },
+  },
+  CreateMembershipPayload: {
+    __typename: { __type: "String!" },
+    membership: { __type: "Membership!" },
+  },
   DeleteMemberRoleInput: { roleId: { __type: "ID!" } },
   DeleteMemberRolePayload: {
     __typename: { __type: "String!" },
     roleId: { __type: "ID!" },
+  },
+  DeleteMembershipInput: { membershipId: { __type: "ID!" } },
+  DeleteMembershipPayload: {
+    __typename: { __type: "String!" },
+    membershipId: { __type: "ID!" },
   },
   MemberRole: {
     __typename: { __type: "String!" },
@@ -122,6 +167,16 @@ export const generatedSchema = {
     updatedAt: { __type: "DateTime!" },
     name: { __type: "String!" },
     description: { __type: "String!" },
+  },
+  Membership: {
+    __typename: { __type: "String!" },
+    id: { __type: "ID!" },
+    createdAt: { __type: "DateTime!" },
+    updatedAt: { __type: "DateTime!" },
+    start: { __type: "DateTime!" },
+    end: { __type: "DateTime!" },
+    user: { __type: "User!" },
+    role: { __type: "MemberRole!" },
   },
   RegisterUserInput: {
     firstName: { __type: "String!" },
@@ -142,6 +197,16 @@ export const generatedSchema = {
   UpdateMemberRolePayload: {
     __typename: { __type: "String!" },
     role: { __type: "MemberRole!" },
+  },
+  UpdateMembershipInput: {
+    membershipId: { __type: "ID!" },
+    roleId: { __type: "ID!" },
+    start: { __type: "DateTime!" },
+    end: { __type: "DateTime!" },
+  },
+  UpdateMembershipPayload: {
+    __typename: { __type: "String!" },
+    membership: { __type: "Membership!" },
   },
   UpdateUserInput: {
     userId: { __type: "ID!" },
@@ -169,6 +234,7 @@ export const generatedSchema = {
     twitterHandle: { __type: "String" },
     instagramHandle: { __type: "String" },
     bio: { __type: "String" },
+    memberships: { __type: "[Membership!]!" },
   },
 } as const;
 
@@ -191,6 +257,15 @@ export interface Mutation {
   deleteMemberRole: (args: {
     input: DeleteMemberRoleInput;
   }) => DeleteMemberRolePayload;
+  createMembership: (args: {
+    input: CreateMembershipInput;
+  }) => CreateMembershipPayload;
+  updateMembership: (args: {
+    input: UpdateMembershipInput;
+  }) => UpdateMembershipPayload;
+  deleteMembership: (args: {
+    input: DeleteMembershipInput;
+  }) => DeleteMembershipPayload;
   registerUser: (args: { input: RegisterUserInput }) => RegisterUserPayload;
   updateUser: (args: { input: UpdateUserInput }) => UpdateUserPayload;
 }
@@ -210,9 +285,19 @@ export interface CreateMemberRolePayload {
   role: MemberRole;
 }
 
+export interface CreateMembershipPayload {
+  __typename: "CreateMembershipPayload" | undefined;
+  membership: Membership;
+}
+
 export interface DeleteMemberRolePayload {
   __typename: "DeleteMemberRolePayload" | undefined;
   roleId: ScalarsEnums["ID"];
+}
+
+export interface DeleteMembershipPayload {
+  __typename: "DeleteMembershipPayload" | undefined;
+  membershipId: ScalarsEnums["ID"];
 }
 
 export interface MemberRole {
@@ -224,6 +309,17 @@ export interface MemberRole {
   description: ScalarsEnums["String"];
 }
 
+export interface Membership {
+  __typename: "Membership" | undefined;
+  id: ScalarsEnums["ID"];
+  createdAt: ScalarsEnums["DateTime"];
+  updatedAt: ScalarsEnums["DateTime"];
+  start: ScalarsEnums["DateTime"];
+  end: ScalarsEnums["DateTime"];
+  user: User;
+  role: MemberRole;
+}
+
 export interface RegisterUserPayload {
   __typename: "RegisterUserPayload" | undefined;
   user: User;
@@ -233,6 +329,11 @@ export interface RegisterUserPayload {
 export interface UpdateMemberRolePayload {
   __typename: "UpdateMemberRolePayload" | undefined;
   role: MemberRole;
+}
+
+export interface UpdateMembershipPayload {
+  __typename: "UpdateMembershipPayload" | undefined;
+  membership: Membership;
 }
 
 export interface UpdateUserPayload {
@@ -255,6 +356,7 @@ export interface User {
   twitterHandle?: Maybe<ScalarsEnums["String"]>;
   instagramHandle?: Maybe<ScalarsEnums["String"]>;
   bio?: Maybe<ScalarsEnums["String"]>;
+  memberships: Array<Membership>;
 }
 
 export interface SchemaObjectTypes {
@@ -263,10 +365,14 @@ export interface SchemaObjectTypes {
   Subscription: Subscription;
   BuildInfo: BuildInfo;
   CreateMemberRolePayload: CreateMemberRolePayload;
+  CreateMembershipPayload: CreateMembershipPayload;
   DeleteMemberRolePayload: DeleteMemberRolePayload;
+  DeleteMembershipPayload: DeleteMembershipPayload;
   MemberRole: MemberRole;
+  Membership: Membership;
   RegisterUserPayload: RegisterUserPayload;
   UpdateMemberRolePayload: UpdateMemberRolePayload;
+  UpdateMembershipPayload: UpdateMembershipPayload;
   UpdateUserPayload: UpdateUserPayload;
   User: User;
 }
@@ -276,10 +382,14 @@ export type SchemaObjectTypesNames =
   | "Subscription"
   | "BuildInfo"
   | "CreateMemberRolePayload"
+  | "CreateMembershipPayload"
   | "DeleteMemberRolePayload"
+  | "DeleteMembershipPayload"
   | "MemberRole"
+  | "Membership"
   | "RegisterUserPayload"
   | "UpdateMemberRolePayload"
+  | "UpdateMembershipPayload"
   | "UpdateUserPayload"
   | "User";
 

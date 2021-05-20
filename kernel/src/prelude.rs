@@ -34,5 +34,7 @@ pub use tracing::{trace, trace_span};
 pub use tracing::{warn, warn_span};
 
 use chrono::DateTime as GenericDateTime;
+pub use chrono::NaiveDate as Date;
+pub use chrono::NaiveTime as Time;
 pub use chrono::{Duration, FixedOffset, TimeZone, Utc};
 pub type DateTime<Tz = Utc> = GenericDateTime<Tz>;

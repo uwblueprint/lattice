@@ -54,9 +54,8 @@ impl User {
     }
 
     pub fn memberships(&self) -> FindQuery<Membership> {
-        let user_id = self.id.clone();
-        let conditions =
-            MembershipConditions::builder().user_id(user_id).build();
+        let user_ref = self.object_ref();
+        let conditions = MembershipConditions::builder().user(user_ref).build();
         Membership::filter(conditions)
     }
 }
@@ -67,9 +66,9 @@ pub struct UserConditions {
     pub query: Option<String>,
 }
 
-impl Into<Document> for UserConditions {
-    fn into(self) -> Document {
-        let Self { query } = self;
+impl From<UserConditions> for Document{
+    fn from(conditions: UserConditions) -> Document {
+        let UserConditions{ query } = conditions;
 
         let mut doc = Document::new();
         if let Some(query) = query {

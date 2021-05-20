@@ -9,20 +9,24 @@ impl MembershipObject {
         self.global_id().into()
     }
 
-    async fn created_at(&self) -> &DateTime {
-        &self.created_at
+    async fn created_at(&self) -> DateTimeScalar {
+        let date_time = self.created_at.clone();
+        date_time.into()
     }
 
-    async fn updated_at(&self) -> &DateTime {
-        &self.updated_at
+    async fn updated_at(&self) -> DateTimeScalar {
+        let date_time = self.updated_at.clone();
+        date_time.into()
     }
 
-    async fn start(&self) -> &DateTime {
-        &self.start
+    async fn start(&self) -> DateScalar {
+        let date = self.start.clone();
+        date.into()
     }
 
-    async fn end(&self) -> &DateTime {
-        &self.end
+    async fn end(&self) -> DateScalar {
+        let date = self.end.clone();
+        date.into()
     }
 
     async fn user(&self, ctx: &Context<'_>) -> FieldResult<UserObject> {
@@ -135,14 +139,16 @@ impl MembershipMutations {
             description,
         } = input;
 
-        let role_id = role_id
-            .get::<MemberRole>()
-            .ensure("invalid member role ID")?;
-        let role = MemberRole::find(&role_id)
-            .load(ctx.entity())
-            .await
-            .extend("failed to load member role")?
-            .ensure("member role not found")?;
+        let role = {
+            let id = role_id
+                .get::<MemberRole>()
+                .ensure("invalid member role ID")?;
+            MemberRole::find(&id)
+                .load(ctx.entity())
+                .await
+                .extend("failed to load member role")?
+                .ensure("member role not found")?
+        };
 
         let mut role = MemberRole {
             name,
@@ -194,18 +200,27 @@ impl MembershipMutations {
             start,
             end,
         } = input;
-        let role_id = role_id.get::<User>().ensure("invalid role ID")?;
-        let user_id = user_id.get::<User>().ensure("invalid user ID")?;
+
+        let user_ref: ObjectRef = {
+            let id = user_id.get::<User>().ensure("invalid user ID")?;
+            id.into()
+        };
+        let role_ref: ObjectRef = {
+            let id = role_id
+                .get::<MemberRole>()
+                .ensure("invalid member role ID")?;
+            id.into()
+        };
 
         let viewer = with_viewer(ctx).await?;
-        if viewer.id != user_id {
+        if viewer.object_ref() != user_ref {
             let error = format_err!("not authorized");
             return Err(error.into());
         }
 
         let mut membership = Membership::builder()
-            .user_id(user_id)
-            .role_id(role_id)
+            .user(user_ref)
+            .role(role_ref)
             .start(start)
             .end(end)
             .build();
@@ -231,28 +246,33 @@ impl MembershipMutations {
             end,
         } = input;
 
-        let membership_id = membership_id
-            .get::<Membership>()
-            .ensure("invalid membership ID")?;
-        let membership = Membership::find(&membership_id)
-            .load(ctx.entity())
-            .await
-            .extend("failed to load membership")?
-            .ensure("membership not found")?;
+        let membership = {
+            let id = membership_id
+                .get::<Membership>()
+                .ensure("invalid membership ID")?;
+            Membership::find(&id)
+                .load(ctx.entity())
+                .await
+                .extend("failed to load membership")?
+                .ensure("membership not found")?
+        };
 
-        let user_id = membership.user_id.clone();
-        let role_id = role_id.get::<User>().ensure("invalid role ID")?;
+        let user_ref = membership.user.clone();
+        let role_ref: ObjectRef = {
+            let id = role_id.get::<MemberRole>().ensure("invalid role ID")?;
+            id.into()
+        };
 
         let viewer = with_viewer(ctx).await?;
-        if viewer.id != user_id {
+        if viewer.object_ref() != user_ref {
             let error = format_err!("not authorized");
             return Err(error.into());
         }
 
         let mut membership = Membership {
-            role_id,
-            start,
-            end,
+            role: role_ref,
+            start: start.into(),
+            end: end.into(),
             ..membership
         };
         membership
@@ -272,14 +292,16 @@ impl MembershipMutations {
     ) -> FieldResult<DeleteMembershipPayload> {
         let DeleteMembershipInput { membership_id } = input;
 
-        let membership_id = membership_id
-            .get::<Membership>()
-            .ensure("invalid membership ID")?;
-        let mut membership = Membership::find(&membership_id)
-            .load(ctx.entity())
-            .await
-            .extend("failed to load membership")?
-            .ensure("membership not found")?;
+        let mut membership = {
+            let id = membership_id
+                .get::<Membership>()
+                .ensure("invalid membership ID")?;
+            Membership::find(&id)
+                .load(ctx.entity())
+                .await
+                .extend("failed to load membership")?
+                .ensure("membership not found")?
+        };
         membership
             .delete(ctx.entity())
             .await
@@ -329,9 +351,8 @@ struct DeleteMemberRolePayload {
 struct CreateMembershipInput {
     user_id: NodeId,
     role_id: NodeId,
-
-    start: DateTime,
-    end: DateTime,
+    start: DateScalar,
+    end: DateScalar,
 }
 
 #[derive(Debug, Clone, SimpleObject)]
@@ -343,9 +364,8 @@ struct CreateMembershipPayload {
 struct UpdateMembershipInput {
     membership_id: NodeId,
     role_id: NodeId,
-
-    start: DateTime,
-    end: DateTime,
+    start: DateScalar,
+    end: DateScalar,
 }
 
 #[derive(Debug, Clone, SimpleObject)]
