@@ -194,7 +194,7 @@ impl MembershipMutations {
             start,
             end,
         } = input;
-        let role_id = role_id.get::<User>().ensure("invalid role ID")?;
+        let role_id = role_id.get::<MemberRole>().ensure("invalid member role ID")?;
         let user_id = user_id.get::<User>().ensure("invalid user ID")?;
 
         let viewer = with_viewer(ctx).await?;

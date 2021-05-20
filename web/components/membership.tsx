@@ -1,21 +1,31 @@
 import React, { FC } from "react";
-import { getFields } from "gqless";
+import { Controller } from "react-hook-form";
+import { DateTime } from "luxon";
+import { prepass } from "gqless";
 
 import { Text } from "@chakra-ui/react";
 import { FormLabel, FormControl } from "@chakra-ui/react";
 import { ButtonProps, Button } from "@chakra-ui/react";
-import { Input } from "@chakra-ui/react";
+import { Input, Select } from "@chakra-ui/react";
 import { ModalProps } from "@chakra-ui/react";
 
 import { TextareaAutosize } from "components";
 import { Card, CardProps } from "components";
 import { ModalTrigger } from "components";
 import { EditModal, useEditModalForm, useEditModalMutations } from "components";
+import { useQuery } from "components";
 
-import { MemberRole } from "schema";
+import { MemberRole, Membership } from "schema";
 import { CreateMemberRoleInput, CreateMemberRolePayload } from "schema";
 import { UpdateMemberRoleInput, UpdateMemberRolePayload } from "schema";
 import { DeleteMemberRoleInput, DeleteMemberRolePayload } from "schema";
+import { CreateMembershipInput, CreateMembershipPayload } from "schema";
+import { UpdateMembershipInput, UpdateMembershipPayload } from "schema";
+import { DeleteMembershipInput, DeleteMembershipPayload } from "schema";
+
+import DayPickerInput from 'react-day-picker/DayPickerInput';
+import 'react-day-picker/lib/style.css';
+
 
 export interface EditMemberRoleModalProps extends Omit<ModalProps, "children"> {
   role?: MemberRole;
@@ -128,7 +138,7 @@ export const EditMemberRoleModal: FC<EditMemberRoleModalProps> = ({
 
 export interface MemberRoleCardProps
   extends Omit<CardProps, "role">,
-    Pick<EditMemberRoleModalProps, "onUpdate" | "onDelete"> {
+  Pick<EditMemberRoleModalProps, "onUpdate" | "onDelete"> {
   role: MemberRole;
 }
 
@@ -163,7 +173,7 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
 
 export interface NewMemberRoleButtonProps
   extends ButtonProps,
-    Pick<EditMemberRoleModalProps, "onCreate"> {}
+  Pick<EditMemberRoleModalProps, "onCreate"> { }
 
 export const NewMemberRoleButton: FC<NewMemberRoleButtonProps> = ({
   onCreate,
@@ -183,6 +193,196 @@ export const NewMemberRoleButton: FC<NewMemberRoleButtonProps> = ({
           {...otherProps}
         >
           New Role
+        </Button>
+      )}
+    </ModalTrigger>
+  );
+};
+
+export interface EditMembershipModalProps extends Omit<ModalProps, "children"> {
+  userId?: string;
+  membership?: Membership;
+  onCreate?: (payload: CreateMembershipPayload) => void;
+  onUpdate?: (payload: UpdateMembershipPayload) => void;
+  onDelete?: (payload: DeleteMembershipPayload) => void;
+}
+
+export const EditMembershipModal: FC<EditMembershipModalProps> = ({
+  userId,
+  membership,
+  onCreate,
+  onUpdate,
+  onDelete,
+  onClose,
+  ...otherProps
+}) => {
+  const subject = "member role";
+  const { id: membershipId, role, start, end, } = membership ?? {};
+
+  const { memberRoles } = useQuery({
+    // prepare: ({query, prepass}) => {
+    //   prepass(query.memberRoles, "id", "name")
+    // }
+  });
+
+  const {
+    create,
+    update,
+    delete: _delete,
+    isCreating,
+    isUpdating,
+    isDeleting,
+  } = useEditModalMutations({
+    subject,
+    createMutation: (mutation, args: CreateMembershipInput) => {
+      const payload = mutation.createMembership({ input: args });
+      prepass(payload.membership, "id", ["user", "id"], ["role", "id"], "start", "end");
+      return payload;
+    },
+    updateMutation: (mutation, args: UpdateMembershipInput) => {
+      const payload = mutation.updateMembership({ input: args });
+      prepass(payload.membership, "id", ["user", "id"], ["role", "id"], "start", "end");
+      return payload;
+    },
+    deleteMutation: (mutation, args: DeleteMembershipInput) => {
+      const payload = mutation.deleteMembership({ input: args });
+      prepass(payload, "membershipId");
+      return payload;
+    },
+    onCreate,
+    onUpdate,
+    onDelete,
+    onClose,
+  });
+
+  const { register, reset, watch, control, handleSubmit, formState } = useEditModalForm<{
+    roleId: string;
+    start: string;
+    end: string;
+  }>({ key: membershipId });
+  const onSubmit = handleSubmit(async (values) => {
+    // values["start"] // this is the same thing
+    // values.start    // as this
+
+    console.log({ values });
+
+    if (membershipId) {
+      await update({ args: { membershipId,  ...values } });
+    } else {
+      if (!userId) {
+        throw new Error("Missing user ID.");
+      }
+      await create({ args: { userId,  ...values } });
+    }
+    reset();
+  });
+
+  return (
+    <EditModal
+      subject={subject}
+      mode={membership ? "update" : "create"}
+      formState={formState}
+      isCreating={isCreating}
+      isUpdating={isUpdating}
+      isDeleting={isDeleting}
+      onClose={onClose}
+      onSubmit={onSubmit}
+      onDelete={() => {
+        if (membershipId) {
+          _delete({ args: { membershipId } });
+        }
+      }}
+      {...otherProps}
+    >
+      <FormControl isRequired>
+        <FormLabel>Role</FormLabel>
+        <Select {...register("roleId")}>
+          {memberRoles.map(({id, name})=> (
+            <option key={id} value={id}>{name}</option>
+          ))}
+        </Select>
+        {/* < */}
+        {/* <Controller
+          control={control}
+          name="start"
+          rules={{ required: true }}
+          render={({ field: { value, onChange, onBlur } }) => {
+            const date = DateTime.fromISO(value).toJSDate();
+            return (
+              <DayPickerInput
+                value={date}
+                onDayChange={(date) => {
+                  onChange(DateTime.fromJSDate(date).toISO());
+                }} onBlur={onBlur} />
+            )
+          }}
+        /> */}
+      </FormControl>
+  <FormControl isRequired>
+        <FormLabel>Start</FormLabel>
+        <Controller
+          control={control}
+          name="start"
+          rules={{ required: true }}
+          render={({ field: { value, onChange, onBlur } }) => {
+            const date = DateTime.fromISO(value).toJSDate();
+            return (
+              <DayPickerInput
+                value={date}
+                onDayChange={(date) => {
+                  onChange(DateTime.fromJSDate(date).toISO());
+                }} onBlur={onBlur} />
+            )
+          }}
+        />
+      </FormControl>
+      <FormControl isRequired>
+        <FormLabel>End</FormLabel>
+        <Controller
+          control={control}
+          name="end"
+          rules={{ required: true }}
+          render={({ field: { value, onChange, onBlur } }) => {
+            const date = DateTime.fromISO(value).toJSDate();
+            return (
+              <DayPickerInput
+                value={date}
+                onDayChange={(date) => {
+                  onChange(DateTime.fromJSDate(date).toISO());
+                }} onBlur={onBlur} />
+            )
+          }}
+        />
+      </FormControl>
+    </EditModal>
+  );
+};
+
+export interface NewMembershipButtonProps
+  extends ButtonProps, Pick<EditMembershipModalProps, "onCreate">
+  {
+    userId: EditMembershipModalProps["userId"];
+   }
+
+export const NewMembershipButton: FC<NewMembershipButtonProps> = ({
+  userId,
+  onCreate,
+  ...otherProps
+}) => {
+  return (
+    <ModalTrigger
+      renderModal={(disclosure) => (
+        <EditMembershipModal userId={userId} onCreate={onCreate} {...disclosure} />
+      )}
+    >
+      {({ open }) => (
+        <Button
+          colorScheme="blue"
+          alignSelf="start"
+          onClick={open}
+          {...otherProps}
+        >
+          New Membership
         </Button>
       )}
     </ModalTrigger>

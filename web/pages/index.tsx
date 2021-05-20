@@ -6,6 +6,7 @@ import { Text } from "@chakra-ui/react";
 import { PageLayout } from "components";
 import { useViewerQuery } from "components";
 import { UserCard } from "components";
+import { NewMembershipButton } from "components";
 
 const Home: FC = () => {
   const {
@@ -25,6 +26,7 @@ const Home: FC = () => {
           </Box>
         )}
       </Container>
+      {viewer && (<NewMembershipButton userId={viewer.id} />)}
     </PageLayout>
   );
 };
