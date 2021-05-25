@@ -10,6 +10,7 @@ import { ButtonProps, Button } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/react";
 import { ModalProps } from "@chakra-ui/react";
 import { InputProps, Input } from "@chakra-ui/react";
+import { SkeletonText } from "@chakra-ui/react";
 
 import { TextareaAutosize } from "components";
 import { Card, CardProps } from "components";
@@ -153,10 +154,12 @@ export interface MemberRoleCardProps
       "onUpdate" | "onUpdateRefetch" | "onDelete" | "onDeleteRefetch"
     > {
   role: MemberRole;
+  isLoading: boolean;
 }
 
 export const MemberRoleCard: FC<MemberRoleCardProps> = ({
   role,
+  isLoading,
   onUpdate,
   onUpdateRefetch,
   onDelete,
@@ -179,9 +182,13 @@ export const MemberRoleCard: FC<MemberRoleCardProps> = ({
     >
       {({ open }) => (
         <Card title={name} onClickEdit={open} {...otherProps}>
-          <Text color="gray.600" noOfLines={8}>
-            {description}
-          </Text>
+          {!isLoading ? (
+            <Text color="gray.600" noOfLines={8}>
+              {description}
+            </Text>
+          ) : (
+            <SkeletonText noOfLines={4} />
+          )}
         </Card>
       )}
     </ModalTrigger>
@@ -438,7 +445,9 @@ const DateInput: FC<DateInputProps> = ({
       }}
     >
       <DatePicker
-        customInput={<Input {...{ isDisabled }} {...otherProps} />}
+        customInput={
+          <Input autoComplete="off" {...{ isDisabled }} {...otherProps} />
+        }
         selected={selected}
         placeholderText={placeholder}
         minDate={minDate}
@@ -468,10 +477,12 @@ export interface MembershipCardProps
       "onUpdate" | "onUpdateRefetch" | "onDelete" | "onDeleteRefetch"
     > {
   membership: Membership;
+  isLoading: boolean;
 }
 
 export const MembershipCard: FC<MembershipCardProps> = ({
   membership,
+  isLoading,
   onUpdate,
   onUpdateRefetch,
   onDelete,
@@ -495,11 +506,14 @@ export const MembershipCard: FC<MembershipCardProps> = ({
     >
       {({ open }) => (
         <Card title={roleName} spacing={1} onClickEdit={open} {...otherProps}>
-          <Text>From: {start}</Text>
-          <Text>Until: {end}</Text>
-          {/* <Text color="gray.600" noOfLines={8}>
-            {description}
-          </Text> */}
+          {!isLoading ? (
+            <>
+              <Text>From: {start}</Text>
+              <Text>Until: {end}</Text>
+            </>
+          ) : (
+            <SkeletonText noOfLines={4} />
+          )}
         </Card>
       )}
     </ModalTrigger>

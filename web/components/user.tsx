@@ -156,7 +156,7 @@ export interface UserCardProps
   extends BoxProps,
     Pick<EditUserModalProps, "onUpdate"> {
   user: User;
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
 export const UserCard: FC<UserCardProps> = ({

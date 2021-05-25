@@ -63,12 +63,14 @@ impl MemberRoleObject {
         self.global_id().into()
     }
 
-    async fn created_at(&self) -> &DateTime {
-        &self.created_at
+    async fn created_at(&self) -> DateTimeScalar {
+        let date_time = self.created_at.clone();
+        date_time.into()
     }
 
-    async fn updated_at(&self) -> &DateTime {
-        &self.updated_at
+    async fn updated_at(&self) -> DateTimeScalar {
+        let date_time = self.updated_at.clone();
+        date_time.into()
     }
 
     async fn name(&self) -> &String {

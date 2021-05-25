@@ -9,7 +9,11 @@ import { MemberRoleCard, NewMemberRoleButton } from "components";
 import { useQuery } from "components";
 
 const Organization: FC = () => {
-  const { memberRoles } = useQuery();
+  const {
+    memberRoles,
+    $state: { isLoading },
+  } = useQuery();
+
   return (
     <PageLayout>
       <Container as={VStack} align="stretch" spacing={6} py={8}>
@@ -34,6 +38,7 @@ const Organization: FC = () => {
                   <MemberRoleCard
                     key={roleId ?? index}
                     role={role}
+                    isLoading={isLoading}
                     onDeleteRefetch={[memberRoles]}
                   />
                 );

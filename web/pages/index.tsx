@@ -5,9 +5,10 @@ import { Box, Container, VStack } from "@chakra-ui/react";
 import { Text, Heading } from "@chakra-ui/react";
 
 import { Empty, PageLayout } from "components";
-import { useViewerQuery } from "components";
 import { UserCard } from "components";
 import { MembershipCard, NewMembershipButton } from "components";
+import { useViewerQuery } from "components";
+
 import { User } from "schema";
 
 const Home: FC = () => {
@@ -48,6 +49,7 @@ const Home: FC = () => {
                   <MembershipCard
                     key={membershipId ?? index}
                     membership={membership}
+                    isLoading={isLoading}
                     onDeleteRefetch={[memberships]}
                   />
                 );
@@ -56,10 +58,8 @@ const Home: FC = () => {
           ) : (
             <Empty>No memberships to show.</Empty>
           )}
-          <NewMembershipButton
-            userId={viewerId}
-            onCreateRefetch={[memberships]}
-          />
+          {/* TODO: Investigate why `onCreateRefetch={[memberships]}` failed. */}
+          <NewMembershipButton userId={viewerId} onCreateRefetch={[viewer]} />
         </VStack>
       </>
     );
